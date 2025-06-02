@@ -5,43 +5,43 @@ Description: Simulateur de rentabilité pour investissement immobilier
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulateur Immobilier Pro - IA & Géolocalisation</title>
+    <title>Simulateur Immobilier Pro</title>
     
-    <!-- CDN externes -->
-    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <!-- CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/all.min.css">
     
     <style>
         /* Variables CSS pour thèmes */
         :root[data-theme="light"] {
-            --bg-primary: #ffffff;
-            --bg-secondary: #f8f9fa;
-            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-primary: #f0f2f5;
+            --bg-secondary: #ffffff;
             --text-primary: #333333;
             --text-secondary: #666666;
             --card-bg: #ffffff;
-            --border-color: #e9ecef;
-            --shadow: 0 10px 30px rgba(0,0,0,0.1);
-            --success: #28a745;
-            --warning: #ffc107;
-            --danger: #dc3545;
-            --info: #17a2b8;
+            --border-color: #e1e5e9;
+            --shadow: 0 8px 25px rgba(0,0,0,0.1);
+            --accent: #2196F3;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --danger: #F44336;
+            --info: #2196F3;
         }
 
         :root[data-theme="dark"] {
-            --bg-primary: #1a1a1a;
-            --bg-secondary: #2d2d2d;
-            --bg-gradient: linear-gradient(135deg, #434343 0%, #000000 100%);
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
             --text-primary: #ffffff;
-            --text-secondary: #cccccc;
+            --text-secondary: #b3b3b3;
             --card-bg: #2d2d2d;
             --border-color: #404040;
-            --shadow: 0 10px 30px rgba(0,0,0,0.3);
-            --success: #28a745;
-            --warning: #ffc107;
-            --danger: #dc3545;
-            --info: #17a2b8;
+            --shadow: 0 8px 25px rgba(0,0,0,0.3);
+            --accent: #64B5F6;
+            --success: #81C784;
+            --warning: #FFB74D;
+            --danger: #E57373;
+            --info: #64B5F6;
         }
 
         * {
@@ -52,74 +52,53 @@ Description: Simulateur de rentabilité pour investissement immobilier
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--bg-gradient);
-            min-height: 100vh;
-            padding: 20px;
+            background: var(--bg-primary);
             color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
             transition: all 0.3s ease;
+            /* Nouveau fond d'écran moderne */
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+            background-attachment: fixed;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: var(--card-bg);
-            border-radius: 15px;
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        /* HEADER AVANCÉ */
+        /* Header */
         .header {
-            background: linear-gradient(45deg, #2c3e50, #3498db);
-            color: white;
-            padding: 30px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
-            animation: rotate 20s linear infinite;
-        }
-
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            background: var(--card-bg);
+            padding: 20px 0;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--accent);
         }
 
         .header-content {
-            position: relative;
-            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
+            padding: 0 20px;
         }
 
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent);
         }
 
-        .header-controls {
+        .header-actions {
             display: flex;
             gap: 15px;
             align-items: center;
-            flex-wrap: wrap;
         }
 
-        .theme-toggle, .save-btn, .export-btn {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
+        .theme-toggle {
+            background: var(--accent);
             color: white;
+            border: none;
             padding: 10px 15px;
             border-radius: 25px;
             cursor: pointer;
@@ -129,633 +108,1029 @@ Description: Simulateur de rentabilité pour investissement immobilier
             gap: 8px;
         }
 
-        .theme-toggle:hover, .save-btn:hover, .export-btn:hover {
-            background: rgba(255,255,255,0.3);
+        .theme-toggle:hover {
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        /* AUTO-SAVE INDICATOR */
-        .auto-save-indicator {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background: var(--success);
+        .btn {
+            background: var(--accent);
             color: white;
+            border: none;
+            padding: 12px 20px;
             border-radius: 25px;
-            opacity: 0;
+            cursor: pointer;
             transition: all 0.3s ease;
-            z-index: 1000;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .auto-save-indicator.show {
-            opacity: 1;
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        /* CONTENU PRINCIPAL */
-        .main-content {
+        .btn.success {
+            background: var(--success);
+        }
+
+        .btn.warning {
+            background: var(--warning);
+        }
+
+        /* Container principal */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px 40px 20px; /* Ajout padding bottom pour éviter le bandeau blanc */
             display: grid;
             grid-template-columns: 1fr 400px;
-            gap: 0;
-            min-height: 800px;
+            gap: 30px;
+            min-height: calc(100vh - 120px); /* Garantit la hauteur */
         }
 
-        .left-panel {
+        .left-panel, .right-panel {
+            background: var(--card-bg);
+            border-radius: 20px;
             padding: 30px;
-            background: var(--bg-secondary);
-            max-height: 800px;
-            overflow-y: auto;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
         }
 
         .right-panel {
-            padding: 30px;
-            background: var(--card-bg);
-            border-left: 1px solid var(--border-color);
             position: sticky;
-            top: 0;
-            height: 800px;
-            overflow-y: auto;
+            top: 20px;
+            height: fit-content;
         }
 
-        /* SECTIONS */
+        /* Sections */
         .section {
-            background: var(--card-bg);
+            background: var(--bg-secondary);
+            border-radius: 15px;
             padding: 25px;
-            border-radius: 12px;
             margin-bottom: 25px;
-            box-shadow: var(--shadow);
             border: 1px solid var(--border-color);
             transition: all 0.3s ease;
         }
 
         .section:hover {
             transform: translateY(-2px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            box-shadow: var(--shadow);
         }
 
         .section h3 {
-            font-size: 1.3em;
+            color: var(--accent);
             margin-bottom: 20px;
-            color: var(--text-primary);
+            font-size: 18px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        /* GEOLOCALISATION */
-        .location-section {
-            background: linear-gradient(45deg, #4CAF50, #45a049);
-            color: white;
-        }
-
-        .address-input-container {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .address-suggestions {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 100;
-            display: none;
-        }
-
-        .suggestion-item {
-            padding: 10px;
-            cursor: pointer;
-            border-bottom: 1px solid #eee;
-            color: #333;
-        }
-
-        .suggestion-item:hover {
-            background: #f8f9fa;
-        }
-
-        .market-indicators {
+        .form-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .indicator {
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .indicator-value {
-            font-size: 1.5em;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .indicator-label {
-            font-size: 0.9em;
-            opacity: 0.8;
-        }
-
-        /* FORMULAIRES */
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
+            margin-bottom: 15px;
         }
 
         .form-group {
             margin-bottom: 20px;
         }
 
-        .form-group label {
+        label {
             display: block;
             margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--text-secondary);
+            font-weight: 500;
+            color: var(--text-primary);
         }
 
-        .form-group input, .form-group select {
+        input, select {
             width: 100%;
-            padding: 12px;
+            padding: 12px 15px;
             border: 2px solid var(--border-color);
-            border-radius: 8px;
-            background: var(--bg-primary);
+            border-radius: 10px;
+            background: var(--bg-secondary);
             color: var(--text-primary);
-            font-size: 1em;
+            font-size: 16px;
             transition: all 0.3s ease;
         }
 
-        .form-group input:focus, .form-group select:focus {
+        input:focus, select:focus {
             outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
         }
 
-        /* SCORE IA */
+        /* Géolocalisation simplifiée */
+        .location-input {
+            position: relative;
+        }
+
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0 0 10px 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .suggestion-item:hover {
+            background: var(--bg-primary);
+        }
+
+        /* Score IA */
         .score-container {
-            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
             text-align: center;
             margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            border-radius: 20px;
+            color: white;
         }
 
         .score-circle {
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            background: conic-gradient(#ffffff 0deg, #ffffff var(--score-angle), rgba(255,255,255,0.3) var(--score-angle));
-            margin: 0 auto 20px;
+            background: conic-gradient(
+                from 0deg,
+                #4CAF50 0deg,
+                #4CAF50 var(--score-angle, 0deg),
+                rgba(255,255,255,0.2) var(--score-angle, 0deg),
+                rgba(255,255,255,0.2) 360deg
+            );
             display: flex;
             align-items: center;
             justify-content: center;
+            margin: 0 auto 15px;
             position: relative;
         }
 
         .score-circle::before {
             content: '';
+            position: absolute;
             width: 90px;
             height: 90px;
-            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            background: white;
             border-radius: 50%;
-            position: absolute;
         }
 
         .score-value {
-            font-size: 2.5em;
+            position: relative;
+            z-index: 2;
+            font-size: 24px;
             font-weight: bold;
-            z-index: 1;
-        }
-
-        .score-label {
-            font-size: 1.2em;
-            margin-bottom: 15px;
-            opacity: 0.9;
-        }
-
-        /* RECOMMANDATIONS IA */
-        .recommendations {
-            margin-top: 20px;
-        }
-
-        .recommendation {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-        }
-
-        .recommendation.tip {
-            border-left-color: var(--info);
-        }
-
-        .recommendation.warning {
-            border-left-color: var(--warning);
-        }
-
-        .recommendation.danger {
-            border-left-color: var(--danger);
-        }
-
-        .recommendation.success {
-            border-left-color: var(--success);
-        }
-
-        .recommendation-icon {
-            font-size: 1.2em;
-            margin-top: 2px;
-        }
-
-        .recommendation-content {
-            flex: 1;
-        }
-
-        .recommendation-title {
-            font-weight: bold;
-            margin-bottom: 5px;
             color: var(--text-primary);
         }
 
-        .recommendation-message {
-            color: var(--text-secondary);
+        .score-label {
+            font-weight: bold;
             margin-bottom: 5px;
         }
 
-        .recommendation-impact {
-            font-size: 0.9em;
-            font-style: italic;
-            color: var(--success);
-        }
-
-        /* RESULTATS */
+        /* Résultats */
         .result-card {
-            background: var(--card-bg);
+            background: var(--bg-secondary);
             padding: 20px;
-            border-radius: 12px;
+            border-radius: 15px;
             margin-bottom: 15px;
             border: 1px solid var(--border-color);
             transition: all 0.3s ease;
         }
 
         .result-card:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow);
+            transform: translateX(5px);
         }
 
         .result-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
         }
 
         .result-label {
-            font-weight: 600;
+            font-weight: 500;
             color: var(--text-secondary);
         }
 
         .result-value {
-            font-size: 1.3em;
+            font-size: 18px;
             font-weight: bold;
         }
 
-        .result-value.positive { color: var(--success); }
-        .result-value.negative { color: var(--danger); }
-        .result-value.neutral { color: var(--warning); }
+        .positive { color: var(--success); }
+        .negative { color: var(--danger); }
+        .neutral { color: var(--info); }
 
-        /* EXPORT BUTTONS */
-        .export-section {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
+        /* Recommandations */
+        .recommendations {
+            background: linear-gradient(135deg, var(--info), var(--success));
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            margin-top: 20px;
         }
 
-        .export-buttons {
+        .recommendations h3 {
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        .recommendation-item {
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Données de marché */
+        .market-data {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
+            margin-top: 15px;
         }
 
-        .btn-export {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-pdf {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-excel {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-export:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        /* LOADING */
-        .loading {
-            display: none;
+        .market-item {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 10px;
             text-align: center;
-            padding: 20px;
+            border: 1px solid var(--border-color);
         }
 
-        .spinner {
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top: 3px solid #ffffff;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
+        .market-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--accent);
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .market-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 5px;
         }
 
-        /* RESPONSIVE */
+        /* Responsive */
         @media (max-width: 1024px) {
-            .main-content {
+            .container {
                 grid-template-columns: 1fr;
+                gap: 20px;
             }
-
+            
             .right-panel {
-                border-left: none;
-                border-top: 1px solid var(--border-color);
                 position: static;
-                height: auto;
-            }
-
-            .left-panel {
-                max-height: none;
             }
         }
 
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.8em;
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
             }
-
+            
             .header-content {
                 flex-direction: column;
-                text-align: center;
+                gap: 15px;
             }
+            
+            .container {
+                padding: 0 15px 40px 15px;
+            }
+        }
 
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
+        /* Sauvegarde indicateur */
+        .save-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 25px;
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
 
-            .market-indicators {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        .save-indicator.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
 
-            .export-buttons {
-                grid-template-columns: 1fr;
-            }
+        /* Footer pour éviter le bandeau blanc */
+        .footer {
+            background: var(--card-bg);
+            padding: 30px 0;
+            margin-top: 40px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-secondary);
         }
     </style>
 </head>
 <body>
-    <!-- Indicateur de sauvegarde automatique -->
-    <div id="autoSaveIndicator" class="auto-save-indicator">
-        <i class="fas fa-save"></i> Sauvegardé automatiquement
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-home"></i> Simulateur Immobilier Pro
+            </div>
+            <div class="header-actions">
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <i class="fas fa-moon"></i>
+                    <span id="themeText">Mode sombre</span>
+                </button>
+                <button class="btn success" onclick="sauvegarderDonnees()">
+                    <i class="fas fa-save"></i> Sauvegarder
+                </button>
+                <button class="btn warning" onclick="exporterPDF()">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </button>
+                <button class="btn" onclick="exporterExcel()">
+                    <i class="fas fa-file-excel"></i> Excel
+                </button>
+            </div>
+        </div>
     </div>
 
+    <!-- Indicateur de sauvegarde -->
+    <div class="save-indicator" id="saveIndicator">
+        <i class="fas fa-check"></i> Sauvegardé automatiquement
+    </div>
+
+    <!-- Container principal -->
     <div class="container">
-        <!-- HEADER -->
-        <div class="header">
-            <div class="header-content">
-                <div>
-                    <h1><i class="fas fa-home"></i> Simulateur Immobilier Pro</h1>
-                    <p>Intelligence Artificielle • Géolocalisation • Analyses Avancées</p>
+        <!-- PANEL GAUCHE - FORMULAIRE -->
+        <div class="left-panel">
+            <!-- Section Localisation -->
+            <div class="section">
+                <h3><i class="fas fa-map-marker-alt"></i> Localisation</h3>
+                <div class="form-group">
+                    <label for="ville">Ville</label>
+                    <div class="location-input">
+                        <select id="ville" onchange="chargerDonneesVille()">
+                            <option value="">Sélectionnez une ville</option>
+                            <option value="paris">Paris</option>
+                            <option value="lyon">Lyon</option>
+                            <option value="marseille">Marseille</option>
+                            <option value="toulouse">Toulouse</option>
+                            <option value="nice">Nice</option>
+                            <option value="nantes">Nantes</option>
+                            <option value="strasbourg">Strasbourg</option>
+                            <option value="montpellier">Montpellier</option>
+                            <option value="bordeaux">Bordeaux</option>
+                            <option value="lille">Lille</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="header-controls">
-                    <button class="theme-toggle" onclick="toggleTheme()">
-                        <i class="fas fa-moon"></i> <span id="themeText">Mode sombre</span>
-                    </button>
-                    <button class="save-btn" onclick="sauvegarderManuellement()">
-                        <i class="fas fa-save"></i> Sauvegarder
-                    </button>
-                    <button class="export-btn" onclick="exporterPDF()">
-                        <i class="fas fa-download"></i> Export PDF
-                    </button>
+                
+                <!-- Données de marché -->
+                <div id="marketData" class="market-data" style="display: none;">
+                    <div class="market-item">
+                        <div class="market-value" id="prixM2">-</div>
+                        <div class="market-label">Prix moyen/m²</div>
+                    </div>
+                    <div class="market-item">
+                        <div class="market-value" id="loyerM2">-</div>
+                        <div class="market-label">Loyer moyen/m²</div>
+                    </div>
+                    <div class="market-item">
+                        <div class="market-value" id="rentabiliteVille">-</div>
+                        <div class="market-label">Rentabilité moyenne</div>
+                    </div>
+                    <div class="market-item">
+                        <div class="market-value" id="tendanceMarche">-</div>
+                        <div class="market-label">Tendance</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Achat -->
+            <div class="section">
+                <h3><i class="fas fa-shopping-cart"></i> Détails de l'achat</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="prix">Prix d'achat (€)</label>
+                        <input type="number" id="prix" value="280000" oninput="calculerEtSauver()">
+                    </div>
+                    <div class="form-group">
+                        <label for="surface">Surface (m²)</label>
+                        <input type="number" id="surface" value="65" oninput="calculerEtSauver()">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fraisNotaire">Frais de notaire (%)</label>
+                        <input type="number" id="fraisNotaire" value="7.5" step="0.1" oninput="calculerEtSauver()">
+                    </div>
+                    <div class="form-group">
+                        <label for="travaux">Travaux (€)</label>
+                        <input type="number" id="travaux" value="15000" oninput="calculerEtSauver()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Financement -->
+            <div class="section">
+                <h3><i class="fas fa-university"></i> Financement</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="apport">Apport personnel (€)</label>
+                        <input type="number" id="apport" value="70000" oninput="calculerEtSauver()">
+                    </div>
+                    <div class="form-group">
+                        <label for="tauxCredit">Taux de crédit (%)</label>
+                        <input type="number" id="tauxCredit" value="3.5" step="0.1" oninput="calculerEtSauver()">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dureeCredit">Durée (années)</label>
+                        <input type="number" id="dureeCredit" value="20" oninput="calculerEtSauver()">
+                    </div>
+                    <div class="form-group">
+                        <label for="assuranceCredit">Assurance crédit (%)</label>
+                        <input type="number" id="assuranceCredit" value="0.36" step="0.01" oninput="calculerEtSauver()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Revenus -->
+            <div class="section">
+                <h3><i class="fas fa-money-bill-wave"></i> Revenus</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="loyerMensuel">Loyer mensuel (€)</label>
+                        <input type="number" id="loyerMensuel" value="1350" oninput="calculerEtSauver()">
+                    </div>
+                    <div class="form-group">
+                        <label for="chargesRecuperables">Charges récupérables (€/mois)</label>
+                        <input type="number" id="chargesRecuperables" value="50" oninput="calculerEtSauver()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Charges -->
+            <div class="section">
+                <h3><i class="fas fa-receipt"></i> Charges et frais</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="chargesCopro">Charges copropriété (€/mois)</label>
+                        <input type="number" id="chargesCopro" value="120" oninput="calculerEtSauver()">
+                    </div>
+                    <div class="form-group">
+                        <label for="taxeFonciere">Taxe foncière (€/an)</label>
+                        <input type="number" id="taxeFonciere" value="1200" oninput="calculerEtSauver()">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="assurancePno">Assurance PNO (€/an)</label>
+                        <input type="number" id="assurancePno" value="300" oninput="calculerEtSauver()">
+                    </div>
+                    <div class="form-group">
+                        <label for="gestionLocative">Gestion locative (%)</label>
+                        <input type="number" id="gestionLocative" value="3" step="0.1" oninput="calculerEtSauver()">
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- CONTENU PRINCIPAL -->
-        <div class="main-content">
-            <!-- PANEL GAUCHE - PARAMETRES -->
-            <div class="left-panel">
-                
-                <!-- GEOLOCALISATION -->
-                <div class="section location-section">
-                    <h3><i class="fas fa-map-marker-alt"></i> Géolocalisation & Marché</h3>
-                    <div class="address-input-container">
-                        <input type="text" id="adresse" placeholder="Entrez l'adresse du bien..." onkeyup="rechercherAdresses()" oninput="sauvegarderAutomatique()">
-                        <div id="addressSuggestions" class="address-suggestions"></div>
-                    </div>
-                    
-                    <div id="loading" class="loading">
-                        <div class="spinner"></div>
-                        <p>Analyse des données de marché en cours...</p>
-                    </div>
-
-                    <div id="marketIndicators" class="market-indicators">
-                        <div class="indicator">
-                            <div class="indicator-value" id="prixM2Moyen">4500€</div>
-                            <div class="indicator-label">Prix/m² moyen</div>
-                        </div>
-                        <div class="indicator">
-                            <div class="indicator-value" id="evolutionAnnuelle">+2.1%</div>
-                            <div class="indicator-label">Évolution/an</div>
-                        </div>
-                        <div class="indicator">
-                            <div class="indicator-value" id="tensionLocative">Forte</div>
-                            <div class="indicator-label">Tension locative</div>
-                        </div>
-                        <div class="indicator">
-                            <div class="indicator-value" id="rendementZone">4.2%</div>
-                            <div class="indicator-label">Rendement zone</div>
-                        </div>
-                    </div>
+        <!-- PANEL DROIT - RESULTATS & IA -->
+        <div class="right-panel">
+            <!-- SCORE IA -->
+            <div class="score-container">
+                <div class="score-circle" id="scoreCircle" style="--score-angle: 306deg;">
+                    <div class="score-value" id="scoreValue">85</div>
                 </div>
+                <div class="score-label" id="scoreLabel">Score d'investissement</div>
+                <div id="scoreDescription">Excellent investissement</div>
+            </div>
 
-                <!-- ACQUISITION -->
-                <div class="section">
-                    <h3><i class="fas fa-euro-sign"></i> Acquisition</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Prix d'achat (€)</label>
-                            <input type="number" id="prixAchat" value="250000" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                        <div class="form-group">
-                            <label>Surface habitable (m²)</label>
-                            <input type="number" id="surface" value="50" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                        <div class="form-group">
-                            <label>Frais de notaire (%)</label>
-                            <input type="number" id="fraisNotaire" value="7.5" step="0.1" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                        <div class="form-group">
-                            <label>Travaux prévus (€)</label>
-                            <input type="number" id="travaux" value="15000" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- FINANCEMENT -->
-                <div class="section">
-                    <h3><i class="fas fa-university"></i> Financement</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Apport personnel (€)</label>
-                            <input type="number" id="apport" value="75000" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                        <div class="form-group">
-                            <label>Taux d'intérêt (%)</label>
-                            <input type="number" id="tauxInteret" value="3.5" step="0.1" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                        <div class="form-group">
-                            <label>Durée du prêt (années)</label>
-                            <input type="number" id="dureeCredit" value="20" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                        <div class="form-group">
-                            <label>Assurance emprunteur (%)</label>
-                            <input type="number" id="assuranceEmprunteur" value="0.35" step="0.01" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- REVENUS -->
-                <div class="section">
-                    <h3><i class="fas fa-home"></i> Revenus locatifs</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Loyer mensuel hors charges (€)</label>
-                            <input type="number" id="loyerMensuel" value="1200" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                        <div class="form-group">
-                            <label>Charges récupérables (€/mois)</label>
-                            <input type="number" id="chargesRecuperables" value="50" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                        <div class="form-group">
-                            <label>Vacance locative (%)</label>
-                            <input type="number" id="vacanceLocative" value="5" step="0.5" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                        <div class="form-group">
-                            <label>Révision annuelle (%)</label>
-                            <input type="number" id="revisionAnnuelle" value="2" step="0.1" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- CHARGES -->
-                <div class="section">
-                    <h3><i class="fas fa-cogs"></i> Charges & Frais</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Taxe foncière (€/an)</label>
-                            <input type="number" id="taxeFonciere" value="1500" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                        <div class="form-group">
-                            <label>Charges de copropriété (€/mois)</label>
-                            <input type="number" id="chargesCopro" value="80" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                        <div class="form-group">
-                            <label>Assurance PNO (€/an)</label>
-                            <input type="number" id="assurancePNO" value="200" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                        <div class="form-group">
-                            <label>Gestion locative (%)</label>
-                            <input type="number" id="gestionLocative" value="6" step="0.5" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                        <div class="form-group">
-                            <label>Provisions travaux (%/an du loyer)</label>
-                            <input type="number" id="provisionsTravaux" value="8" step="0.5" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                        <div class="form-group">
-                            <label>Comptabilité (€/an)</label>
-                            <input type="number" id="comptabilite" value="300" oninput="calculer(); sauvegarderAutomatique()">
-                        </div>
-                    </div>
+            <!-- RESULTATS FINANCIERS -->
+            <div class="result-card">
+                <div class="result-header">
+                    <span class="result-label">💰 Rentabilité brute</span>
+                    <span class="result-value positive" id="rentabiliteBrute">5.76%</span>
                 </div>
             </div>
 
-            <!-- PANEL DROIT - RESULTATS & IA -->
-            <div class="right-panel">
+            <div class="result-card">
+                <div class="result-header">
+                    <span class="result-label">📊 Rentabilité nette</span>
+                    <span class="result-value positive" id="rentabiliteNette">3.84%</span>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <div class="result-header">
+                    <span class="result-label">💸 Cash-flow mensuel</span>
+                    <span class="result-value neutral" id="cashFlowMensuel">+156€</span>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <div class="result-header">
+                    <span class="result-label">🎯 Rentabilité sur apport</span>
+                    <span class="result-value positive" id="rentabiliteApport">12.84%</span>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <div class="result-header">
+                    <span class="result-label">⏰ Temps de retour</span>
+                    <span class="result-value neutral" id="tempsRetour">7.8 ans</span>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <div class="result-header">
+                    <span class="result-label">🏦 Mensualité crédit</span>
+                    <span class="result-value neutral" id="mensualiteCredit">1,247€</span>
+                </div>
+            </div>
+
+            <!-- RECOMMANDATIONS IA -->
+            <div class="recommendations">
+                <h3><i class="fas fa-robot"></i> Recommandations IA</h3>
+                <div id="recommendationsList">
+                    <div class="recommendation-item">
+                        <strong>✅ Rentabilité excellente</strong><br>
+                        Votre investissement dépasse les standards du marché
+                    </div>
+                    <div class="recommendation-item">
+                        <strong>💡 Optimisation suggérée</strong><br>
+                        Négocier le prix d'achat pour améliorer la rentabilité
+                    </div>
+                    <div class="recommendation-item">
+                        <strong>🎯 Point d'attention</strong><br>
+                        Prévoir une provision pour vacance locative
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer pour éviter le bandeau blanc -->
+    <div class="footer">
+        <p>© 2024 Simulateur Immobilier Pro - Tous droits réservés</p>
+        <p>Outil d'aide à la décision - Les résultats sont indicatifs</p>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentTheme = localStorage.getItem('theme') || 'light';
+        
+        // Données de marché par ville
+        const donneesMarche = {
+            paris: { prixM2: 10500, loyerM2: 35, rentabilite: 3.3, tendance: '📈 Hausse' },
+            lyon: { prixM2: 4800, loyerM2: 18, rentabilite: 4.5, tendance: '📈 Hausse' },
+            marseille: { prixM2: 3200, loyerM2: 14, rentabilite: 5.2, tendance: '📊 Stable' },
+            toulouse: { prixM2: 3800, loyerM2: 16, rentabilite: 4.8, tendance: '📈 Hausse' },
+            nice: { prixM2: 5200, loyerM2: 22, rentabilite: 4.2, tendance: '📊 Stable' },
+            nantes: { prixM2: 4100, loyerM2: 17, rentabilite: 4.9, tendance: '📈 Hausse' },
+            strasbourg: { prixM2: 3500, loyerM2: 15, rentabilite: 5.1, tendance: '📊 Stable' },
+            montpellier: { prixM2: 3900, loyerM2: 16, rentabilite: 4.9, tendance: '📈 Hausse' },
+            bordeaux: { prixM2: 4200, loyerM2: 17, rentabilite: 4.8, tendance: '📊 Stable' },
+            lille: { prixM2: 2800, loyerM2: 13, rentabilite: 5.5, tendance: '📈 Hausse' }
+        };
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            appliquerTheme(currentTheme);
+            chargerDonneesSauvegardees();
+            calculer();
+        });
+
+        // Fonction de calcul principal
+        function calculer() {
+            const prix = parseFloat(document.getElementById('prix').value) || 0;
+            const surface = parseFloat(document.getElementById('surface').value) || 0;
+            const fraisNotaire = parseFloat(document.getElementById('fraisNotaire').value) || 0;
+            const travaux = parseFloat(document.getElementById('travaux').value) || 0;
+            const apport = parseFloat(document.getElementById('apport').value) || 0;
+            const tauxCredit = parseFloat(document.getElementById('tauxCredit').value) || 0;
+            const dureeCredit = parseFloat(document.getElementById('dureeCredit').value) || 0;
+            const assuranceCredit = parseFloat(document.getElementById('assuranceCredit').value) || 0;
+            const loyerMensuel = parseFloat(document.getElementById('loyerMensuel').value) || 0;
+            const chargesRecuperables = parseFloat(document.getElementById('chargesRecuperables').value) || 0;
+            const chargesCopro = parseFloat(document.getElementById('chargesCopro').value) || 0;
+            const taxeFonciere = parseFloat(document.getElementById('taxeFonciere').value) || 0;
+            const assurancePno = parseFloat(document.getElementById('assurancePno').value) || 0;
+            const gestionLocative = parseFloat(document.getElementById('gestionLocative').value) || 0;
+
+            // Calculs
+            const fraisNotaireEuros = prix * (fraisNotaire / 100);
+            const investissementTotal = prix + fraisNotaireEuros + travaux;
+            const montantEmprunte = investissementTotal - apport;
+            
+            const tauxMensuel = tauxCredit / 100 / 12;
+            const nbMensualites = dureeCredit * 12;
+            let mensualiteCredit = 0;
+            if (tauxMensuel > 0) {
+                mensualiteCredit = montantEmprunte * (tauxMensuel * Math.pow(1 + tauxMensuel, nbMensualites)) / (Math.pow(1 + tauxMensuel, nbMensualites) - 1);
+            } else {
+                mensualiteCredit = montantEmprunte / nbMensualites;
+            }
+            
+            const assuranceMensuelle = montantEmprunte * (assuranceCredit / 100) / 12;
+            
+            const revenus = loyerMensuel + chargesRecuperables;
+            const chargesMensuelles = chargesCopro + (taxeFonciere / 12) + (assurancePno / 12) + (revenus * gestionLocative / 100);
+            
+            const cashFlowMensuel = revenus - mensualiteCredit - assuranceMensuelle - chargesMensuelles;
+            const revenuAnnuelNet = (revenus - chargesMensuelles) * 12;
+            
+            const rentabiliteBrute = ((loyerMensuel * 12) / prix
+            const rentabiliteBrute = ((loyerMensuel * 12) / prix) * 100;
+            const rentabiliteNette = (revenuAnnuelNet / investissementTotal) * 100;
+            const rentabiliteApport = ((cashFlowMensuel * 12) / apport) * 100;
+            const tempsRetour = apport / (Math.abs(cashFlowMensuel * 12));
+
+            // Mise à jour de l'affichage
+            document.getElementById('rentabiliteBrute').textContent = rentabiliteBrute.toFixed(2) + '%';
+            document.getElementById('rentabiliteNette').textContent = rentabiliteNette.toFixed(2) + '%';
+            document.getElementById('cashFlowMensuel').textContent = (cashFlowMensuel >= 0 ? '+' : '') + Math.round(cashFlowMensuel).toLocaleString() + '€';
+            document.getElementById('rentabiliteApport').textContent = rentabiliteApport.toFixed(2) + '%';
+            document.getElementById('tempsRetour').textContent = tempsRetour.toFixed(1) + ' ans';
+            document.getElementById('mensualiteCredit').textContent = Math.round(mensualiteCredit + assuranceMensuelle).toLocaleString() + '€';
+
+            // Mise à jour des classes pour les couleurs
+            mettreAJourCouleurs('rentabiliteBrute', rentabiliteBrute, 4, 6);
+            mettreAJourCouleurs('rentabiliteNette', rentabiliteNette, 3, 5);
+            mettreAJourCouleurs('cashFlowMensuel', cashFlowMensuel, 0, 200);
+            mettreAJourCouleurs('rentabiliteApport', rentabiliteApport, 8, 15);
+
+            // Calcul du score IA
+            calculerScoreIA(rentabiliteBrute, rentabiliteNette, cashFlowMensuel, rentabiliteApport);
+            
+            // Générer recommandations
+            genererRecommandations(rentabiliteBrute, rentabiliteNette, cashFlowMensuel, prix, loyerMensuel);
+        }
+
+        function mettreAJourCouleurs(elementId, valeur, seuilNegatif, seuilPositif) {
+            const element = document.getElementById(elementId);
+            element.classList.remove('positive', 'negative', 'neutral');
+            
+            if (valeur >= seuilPositif) {
+                element.classList.add('positive');
+            } else if (valeur <= seuilNegatif) {
+                element.classList.add('negative');
+            } else {
+                element.classList.add('neutral');
+            }
+        }
+
+        function calculerScoreIA(rentabiliteBrute, rentabiliteNette, cashFlow, rentabiliteApport) {
+            let score = 0;
+            
+            // Critères de notation
+            if (rentabiliteBrute >= 7) score += 25;
+            else if (rentabiliteBrute >= 5) score += 20;
+            else if (rentabiliteBrute >= 4) score += 15;
+            else if (rentabiliteBrute >= 3) score += 10;
+            
+            if (rentabiliteNette >= 5) score += 20;
+            else if (rentabiliteNette >= 4) score += 15;
+            else if (rentabiliteNette >= 3) score += 10;
+            else if (rentabiliteNette >= 2) score += 5;
+            
+            if (cashFlow >= 300) score += 20;
+            else if (cashFlow >= 100) score += 15;
+            else if (cashFlow >= 0) score += 10;
+            else if (cashFlow >= -100) score += 5;
+            
+            if (rentabiliteApport >= 15) score += 20;
+            else if (rentabiliteApport >= 12) score += 15;
+            else if (rentabiliteApport >= 10) score += 10;
+            else if (rentabiliteApport >= 8) score += 5;
+            
+            // Bonus localisation
+            const ville = document.getElementById('ville').value;
+            if (ville && donneesMarche[ville]) {
+                if (donneesMarche[ville].tendance.includes('Hausse')) score += 10;
+                else if (donneesMarche[ville].tendance.includes('Stable')) score += 5;
+            }
+            
+            score = Math.min(100, Math.max(0, score));
+            
+            // Mise à jour de l'affichage
+            document.getElementById('scoreValue').textContent = score;
+            document.getElementById('scoreCircle').style.setProperty('--score-angle', (score * 3.6) + 'deg');
+            
+            let description, couleur;
+            if (score >= 80) {
+                description = 'Excellent investissement';
+                couleur = '#4CAF50';
+            } else if (score >= 60) {
+                description = 'Bon investissement';
+                couleur = '#FF9800';
+            } else if (score >= 40) {
+                description = 'Investissement moyen';
+                couleur = '#FF5722';
+            } else {
+                description = 'Investissement risqué';
+                couleur = '#F44336';
+            }
+            
+            document.getElementById('scoreDescription').textContent = description;
+            document.getElementById('scoreCircle').style.background = `conic-gradient(from 0deg, ${couleur} 0deg, ${couleur} ${score * 3.6}deg, rgba(255,255,255,0.2) ${score * 3.6}deg, rgba(255,255,255,0.2) 360deg)`;
+        }
+
+        function genererRecommandations(rentabiliteBrute, rentabiliteNette, cashFlow, prix, loyer) {
+            const recommendations = [];
+            
+            if (rentabiliteBrute >= 6) {
+                recommendations.push({
+                    icon: '✅',
+                    title: 'Rentabilité excellente',
+                    text: 'Votre rentabilité brute dépasse 6%, c\'est un excellent investissement.'
+                });
+            } else if (rentabiliteBrute < 4) {
+                recommendations.push({
+                    icon: '⚠️',
+                    title: 'Rentabilité faible',
+                    text: 'Négociez le prix d\'achat ou augmentez le loyer pour améliorer la rentabilité.'
+                });
+            }
+            
+            if (cashFlow < 0) {
+                recommendations.push({
+                    icon: '🔴',
+                    title: 'Cash-flow négatif',
+                    text: 'Vous devrez compléter chaque mois. Réduisez les charges ou augmentez les revenus.'
+                });
+            } else if (cashFlow > 200) {
+                recommendations.push({
+                    icon: '💰',
+                    title: 'Excellent cash-flow',
+                    text: 'Votre investissement génère un cash-flow positif important.'
+                });
+            }
+            
+            if ((loyer * 12) > (prix * 0.08)) {
+                recommendations.push({
+                    icon: '🎯',
+                    title: 'Ratio loyer/prix optimal',
+                    text: 'Le rapport loyer/prix est très favorable à l\'investissement.'
+                });
+            }
+            
+            recommendations.push({
+                icon: '💡',
+                title: 'Conseil général',
+                text: 'Vérifiez l\'état du bien et prévoyez une provision pour travaux futurs.'
+            });
+            
+            // Affichage des recommandations
+            const container = document.getElementById('recommendationsList');
+            container.innerHTML = recommendations.map(rec => 
+                `<div class="recommendation-item">
+                    <strong>${rec.icon} ${rec.title}</strong><br>
+                    ${rec.text}
+                </div>`
+            ).join('');
+        }
+
+        function chargerDonneesVille() {
+            const ville = document.getElementById('ville').value;
+            const marketData = document.getElementById('marketData');
+            
+            if (ville && donneesMarche[ville]) {
+                const data = donneesMarche[ville];
                 
-                <!-- SCORE IA -->
-                <div class="score-container">
-                    <div class="score-circle" id="scoreCircle" style="--score-angle: 306deg;">
-                        <div class="score-value" id="scoreValue">85</div>
-                    </div>
-                    <div class="score-label" id="scoreLabel">Score d'investissement</div>
-                    <div id="scoreDescription">Excellent investissement</div>
-                </div>
+                document.getElementById('prixM2').textContent = data.prixM2.toLocaleString() + '€';
+                document.getElementById('loyerM2').textContent = data.loyerM2 + '€';
+                document.getElementById('rentabiliteVille').textContent = data.rentabilite + '%';
+                document.getElementById('tendanceMarche').textContent = data.tendance;
+                
+                marketData.style.display = 'grid';
+                
+                // Suggestion automatique basée sur les données de marché
+                const surface = parseFloat(document.getElementById('surface').value) || 65;
+                const prixSuggere = data.prixM2 * surface;
+                const loyerSuggere = Math.round(data.loyerM2 * surface);
+                
+                if (confirm(`Voulez-vous utiliser les données de marché de ${ville.charAt(0).toUpperCase() + ville.slice(1)} ?\n\nPrix suggéré: ${prixSuggere.toLocaleString()}€\nLoyer suggéré: ${loyerSuggere}€`)) {
+                    document.getElementById('prix').value = prixSuggere;
+                    document.getElementById('loyerMensuel').value = loyerSuggere;
+                    calculer();
+                }
+            } else {
+                marketData.style.display = 'none';
+            }
+            
+            calculer();
+        }
 
-                <!-- RESULTATS FINANCIERS -->
-                <div class="result-card">
-                    <div class="result-header">
-                        <span class="result-label">💰 Rentabilité brute</span>
-                        <span class="result-value positive" id="rentabiliteBrute">5.76%</span>
-                    </div>
-                </div>
+        // Gestion du thème
+        function toggleTheme() {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            appliquerTheme(currentTheme);
+            localStorage.setItem('theme', currentTheme);
+        }
 
-                <div class="result-card">
-                    <div class="result-header">
-                        <span class="result-label">📊 Rentabilité nette</span>
-                        <span class="result-value positive" id="rentabiliteNette">3.84%</span>
-                    </div>
-                </div>
+        function appliquerTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const themeText = document.getElementById('themeText');
+            const themeIcon = document.querySelector('.theme-toggle i');
+            
+            if (theme === 'dark') {
+                themeText.textContent = 'Mode clair';
+                themeIcon.className = 'fas fa-sun';
+            } else {
+                themeText.textContent = 'Mode sombre';
+                themeIcon.className = 'fas fa-moon';
+            }
+        }
 
-                <div class="result-card">
-                    <div class="result-header">
-                        <span class="result-label">💸 Cash-flow mensuel</span>
-                        <span class="result-value neutral" id="cashFlowMensuel">+156€</span>
-                    </div>
-                </div>
+        // Sauvegarde automatique
+        function calculerEtSauver() {
+            calculer();
+            sauvegarderAutomatique();
+        }
 
-                <div class="result-card">
-                    <div class="result-header">
-                        <span class="result-label">🎯 Rentabilité sur apport</span>
-                        <span class="result-value positive" id="rentabiliteApport">12.84%</span>
-                    </div>
-                </div>
+        function sauvegarderAutomatique() {
+            const formData = {
+                ville: document.getElementById('ville').value,
+                prix: document.getElementById('prix').value,
+                surface: document.getElementById('surface').value,
+                fraisNotaire: document.getElementById('fraisNotaire').value,
+                travaux: document.getElementById('travaux').value,
+                apport: document.getElementById('apport').value,
+                tauxCredit: document.getElementById('tauxCredit').value,
+                dureeCredit: document.getElementById('dureeCredit').value,
+                assuranceCredit: document.getElementById('assuranceCredit').value,
+                loyerMensuel: document.getElementById('loyerMensuel').value,
+                chargesRecuperables: document.getElementById('chargesRecuperables').value,
+                chargesCopro: document.getElementById('chargesCopro').value,
+                taxeFonciere: document.getElementById('taxeFonciere').value,
+                assurancePno: document.getElementById('assurancePno').value,
+                gestionLocative: document.getElementById('gestionLocative').value
+            };
+            
+            localStorage.setItem('simulateurData', JSON.stringify(formData));
+            afficherIndicateurSauvegarde();
+        }
 
-                <div class="result-card">
-                    <div class="result-header">
-                        <span class="result-label">⏰ Temps de retour</span>
-                        <span class="result-value neutral" id="tempsRetour">7.8 ans</span>
-                    </div>
-                </div>
+        function afficherIndicateurSauvegarde() {
+            const indicator = document.getElementById('saveIndicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
 
-                <!-- RECOMMANDATIONS IA -->
-                <div class="recommendations">
-                    <h3><i class="fas fa-robot"></i> Recommandations IA</h3>
-                    <div id="
+        function chargerDonneesSauvegardees() {
+            const savedData = localStorage.getItem('simulateurData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                Object.keys(data).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        element.value = data[key];
+                    }
+                });
+                
+                // Charger les données de marché si une ville est sélectionnée
+                if (data.ville) {
+                    chargerDonneesVille();
+                }
+            }
+        }
+
+        function sauvegarderDonnees() {
+            sauvegarderAutomatique();
+            alert('💾 Données sauvegardées avec succès !');
+        }
+
+        // Export PDF
+        function exporterPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            
+            // Configuration
+            pdf.setFont("helvetica");
+            
+            // Titre
+            pdf.setFontSize(20);
+            pdf.text('📊 RAPPORT D\'INVESTISSEMENT IMMOBILIER', 20, 30);
+            
+            // Date
+            pdf.setFontSize(10);
+            pdf.text('Généré le : ' + new Date().toLocaleDateString('fr-FR'), 150, 30);
+            
+            // Ligne de séparation
+            pdf.line(20, 35, 190, 35);
+            
+            let yPosition = 50;
+            
+            // Section Localisation
+            const ville = document.getElementById('ville').value;
+            if (ville) {
+                pdf.setFontSize(14);
+                pdf.text('🏙️ LOCALISATION', 20, yPosition);
+                yPosition += 10;
+                pdf.setFontSize(10);
+                pdf.text(`Ville: ${ville.charAt(0).toUpperCase() + ville.slice(1)}`, 25, yPosition);
+                yPosition += 15;
+            }
+            
+            // Section Investissement
+            pdf.setFontSize(14);
+            pdf.text('💰 DÉTAILS DE L\'INVESTISSEMENT', 20, yPosition);
+            yPosition += 10;
+            pdf.setFontSize(10);
+            
+            const details = [
+                `Prix d'achat: ${parseFloat(document.getElementById('prix').value).toLocaleString()} €`,
+                `Surface: ${document.getElementById('surface').value} m²`,
+                `Apport personnel: ${parseFloat(document.getElementById('apport').value).toLocaleString()} €`,
+                `Loyer mensuel: ${parseFloat(document.getElementById('loyerMensuel').value).toLocaleString()} €`
+            ];
+            
+            details.forEach(detail => {
+                pdf.text(detail, 25, yPosition);
+                yPosition += 7;
+            });
+            
+            yPosition += 10;
+            
+            // Section Résultats
+            pdf.setFontSize(14);
+            pdf.text('📊 RÉSULTATS FINANCIERS', 20, yPosition);
+            yPosition += 10;
+            pdf.setFontSize(10);
+            
+            const resultats = [
+                `Rentabilité brute: ${document.getElementById('rentabiliteBrute').textContent}`,
+                `Rentabilité nette: ${document.getElementById('rentabiliteNette').textContent}`,
+                `Cash-flow mensuel: ${document.getElementById('cashFlowMensuel').textContent}`,
+                `Rentabilité sur apport: ${document.getElementById('rentabiliteApport').textContent}`,
+                `Score IA: ${document.getElementById('scoreValue').textContent}/100`
+            ];
+            
+            resultats.forEach(resultat => {
+                pdf.text(resultat, 25, yPosition);
+                yPosition += 7;
+            });
+            
+            // Footer
+            pdf.setFontSize(8);
+            pdf.text('Simulateur Immobilier Pro - Rapport généré automatiquement', 20, 280);
+            pdf.text('Les résultats sont indicatifs et ne constituent pas un conseil en investissement.', 20, 285);
+            
+            // Téléchargement
+            pdf.save(`rapport-investissement-${new Date().toISOString().split('T')[0]}.pdf`);
+        }
+
+        // Export Excel
+        function exporterExcel() {
+            const donnees = [
+                ['RAPPORT D\'INVESTISSEMENT IMMOBILIER'],
+                [''],
+                ['Date', new Date().toLocaleDateString('fr-FR')],
+                [''],
+                ['PARAMÈTRES'],
+                ['Ville', document.getElementById('ville').value || 'Non spécifiée'],
+                ['Prix d\'achat', parseFloat(document.getElementById('prix').value)],
+                ['Surface (m²)', document.getElementById('surface').value],
+                ['Apport personnel', parseFloat(document.getElementById('apport').value)],
+                ['Loyer mensuel', parseFloat(document.getElementById('loyerMensuel').value)],
+                [''],
+                ['RÉSULTATS'],
+                ['Rentabilité brute', document.getElementById('rentabiliteBrute').textContent],
+                ['Rentabilité nette', document.getElementById('rentabiliteNette').textContent],
+                ['Cash-flow mensuel', document.getElementById('cashFlowMensuel').textContent],
+                ['Rentabilité sur apport', document.getElementById('rentabiliteApport').textContent],
+                ['Score IA', document.getElementById('scoreValue').textContent + '/100']
+            ];
+            
+            const ws = XLSX.utils.aoa_to_sheet(donnees);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Rapport");
+            
+            XLSX.writeFile(wb, `rapport-investissement-${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+    </script>
+</body>
+</html>
