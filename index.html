@@ -1,12 +1,49 @@
 # simulateur-rentabilite-immobiliere
 Description: Simulateur de rentabilité pour investissement immobilier
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulateur de Rentabilité Immobilière</title>
+    <title>Simulateur Immobilier Pro - IA & Géolocalisation</title>
+    
+    <!-- CDN externes -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/all.min.css">
+    
     <style>
+        /* Variables CSS pour thèmes */
+        :root[data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --card-bg: #ffffff;
+            --border-color: #e9ecef;
+            --shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+        }
+
+        :root[data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-gradient: linear-gradient(135deg, #434343 0%, #000000 100%);
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --card-bg: #2d2d2d;
+            --border-color: #404040;
+            --shadow: 0 10px 30px rgba(0,0,0,0.3);
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -15,25 +52,54 @@ Description: Simulateur de rentabilité pour investissement immobilier
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--bg-gradient);
             min-height: 100vh;
             padding: 20px;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            background: white;
+            background: var(--card-bg);
             border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow);
             overflow: hidden;
+            transition: all 0.3s ease;
         }
 
+        /* HEADER AVANCÉ */
         .header {
             background: linear-gradient(45deg, #2c3e50, #3498db);
             color: white;
             padding: 30px;
-            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .header h1 {
@@ -41,388 +107,731 @@ Description: Simulateur de rentabilité pour investissement immobilier
             margin-bottom: 10px;
         }
 
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1em;
-        }
-
-        .content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            padding: 30px;
-        }
-
-        .section {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 25px;
-            border-left: 5px solid #3498db;
-        }
-
-        .section h3 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 1.3em;
+        .header-controls {
             display: flex;
+            gap: 15px;
             align-items: center;
         }
 
-        .section h3::before {
-            content: attr(data-icon);
-            margin-right: 10px;
-            font-size: 1.2em;
+        /* CONTROLS */
+        .theme-toggle, .save-btn, .export-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle:hover, .save-btn:hover, .export-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        /* AUTO-SAVE INDICATOR */
+        .auto-save-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: var(--success);
+            color: white;
+            border-radius: 25px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .auto-save-indicator.show {
+            opacity: 1;
+        }
+
+        /* CONTENU PRINCIPAL */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 0;
+            min-height: 800px;
+        }
+
+        .left-panel {
+            padding: 30px;
+            background: var(--bg-secondary);
+            max-height: 800px;
+            overflow-y: auto;
+        }
+
+        .right-panel {
+            padding: 30px;
+            background: var(--card-bg);
+            border-left: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            height: 800px;
+            overflow-y: auto;
+        }
+
+        /* SECTIONS */
+        .section {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .section h3 {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* GEOLOCALISATION */
+        .location-section {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .address-input-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .address-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .suggestion-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .market-indicators {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .indicator {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .indicator-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .indicator-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        /* FORMULAIRES */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 600;
-            color: #2c3e50;
+            color: var(--text-secondary);
         }
 
-        .form-group input {
+        .form-group input, .form-group select {
             width: 100%;
             padding: 12px;
-            border: 2px solid #e1e8ed;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1em;
+            transition: all 0.3s ease;
         }
 
-        .form-group input:focus {
+        .form-group input:focus, .form-group select:focus {
             outline: none;
             border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
-        .results {
-            grid-column: 1 / -1;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        /* SCORE IA */
+        .score-container {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
             color: white;
-            border-radius: 10px;
             padding: 30px;
+            border-radius: 15px;
             text-align: center;
+            margin-bottom: 30px;
         }
 
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(#ffffff 0deg, #ffffff var(--score-angle), transparent var(--score-angle));
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .score-circle::before {
+            content: '';
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .score-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            z-index: 1;
+        }
+
+        .score-label {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        /* RECOMMANDATIONS IA */
+        .recommendations {
             margin-top: 20px;
         }
 
-        .result-card {
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            padding: 20px;
-            backdrop-filter: blur(10px);
+        .recommendation {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
         }
 
-        .result-value {
-            font-size: 2em;
+        .recommendation.tip {
+            border-left-color: var(--info);
+        }
+
+        .recommendation.warning {
+            border-left-color: var(--warning);
+        }
+
+        .recommendation.danger {
+            border-left-color: var(--danger);
+        }
+
+        .recommendation.success {
+            border-left-color: var(--success);
+        }
+
+        .recommendation-icon {
+            font-size: 1.2em;
+            margin-top: 2px;
+        }
+
+        .recommendation-content {
+            flex: 1;
+        }
+
+        .recommendation-title {
             font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+        }
+
+        .recommendation-message {
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .recommendation-impact {
+            font-size: 0.9em;
+            font-style: italic;
+            color: var(--success);
+        }
+
+        /* RESULTATS */
+        .result-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 10px;
         }
 
         .result-label {
-            opacity: 0.9;
+            font-weight: 600;
+            color: var(--text-secondary);
         }
 
-        .analysis {
-            background: white;
-            color: #2c3e50;
-            border-radius: 10px;
-            padding: 25px;
-            margin-top: 20px;
-        }
-
-        .status {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
+        .result-value {
+            font-size: 1.3em;
             font-weight: bold;
-            text-align: center;
         }
 
-        .status.excellent { background: #d4edda; color: #155724; }
-        .status.good { background: #d1ecf1; color: #0c5460; }
-        .status.warning { background: #fff3cd; color: #856404; }
-        .status.danger { background: #f8d7da; color: #721c24; }
+        .result-value.positive { color: var(--success); }
+        .result-value.negative { color: var(--danger); }
+        .result-value.neutral { color: var(--warning); }
+
+        /* EXPORT BUTTONS */
+        .export-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .export-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn-export {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-pdf {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-excel {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-export:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* LOADING */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid var(--border-color);
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .right-panel {
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+                position: static;
+                height: auto;
+            }
+        }
 
         @media (max-width: 768px) {
-            .content {
-                grid-template-columns: 1fr;
+            .header-content {
+                flex-direction: column;
                 gap: 20px;
-                padding: 20px;
             }
-            
-            .header h1 {
-                font-size: 2em;
+
+            .form-grid {
+                grid-template-columns: 1fr;
             }
-        }
 
-        .tips {
-            background: #e8f4fd;
-            border-left: 5px solid #3498db;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 5px;
-        }
-
-        .tips h4 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-
-        ul {
-            margin-left: 20px;
-        }
-
-        li {
-            margin-bottom: 5px;
+            .market-indicators {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Indicateur de sauvegarde automatique -->
+    <div id="autoSaveIndicator" class="auto-save-indicator">
+        <i class="fas fa-save"></i> Sauvegardé automatiquement
+    </div>
+
     <div class="container">
+        <!-- HEADER -->
         <div class="header">
-            <h1>🏠 Simulateur de Rentabilité Immobilière</h1>
-            <p>Analysez la rentabilité de votre investissement en temps réel</p>
+            <div class="header-content">
+                <div>
+                    <h1><i class="fas fa-home"></i> Simulateur Immobilier Pro</h1>
+                    <p>Intelligence Artificielle • Géolocalisation • Analyses Avancées</p>
+                </div>
+                <div class="header-controls">
+                    <button class="theme-toggle" onclick="toggleTheme()">
+                        <i class="fas fa-moon"></i> <span id="themeText">Mode sombre</span>
+                    </button>
+                    <button class="save-btn" onclick="sauvegarderManuellement()">
+                        <i class="fas fa-save"></i> Sauvegarder
+                    </button>
+                    <button class="export-btn" onclick="showExportModal()">
+                        <i class="fas fa-download"></i> Exporter
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <div class="content">
-            <!-- Section Acquisition -->
-            <div class="section">
-                <h3 data-icon="💰">Acquisition</h3>
-                <div class="form-group">
-                    <label>Prix d'achat (€)</label>
-                    <input type="number" id="prixAchat" value="250000" oninput="calculer()">
+        <!-- CONTENU PRINCIPAL -->
+        <div class="main-content">
+            <!-- PANEL GAUCHE - PARAMETRES -->
+            <div class="left-panel">
+                
+                <!-- GEOLOCALISATION -->
+                <div class="section location-section">
+                    <h3><i class="fas fa-map-marker-alt"></i> Géolocalisation & Marché</h3>
+                    <div class="address-input-container">
+                        <input type="text" id="adresse" placeholder="Entrez l'adresse du bien..." onkeyup="rechercherAdresses()" oninput="sauvegarderAutomatique()">
+                        <div id="addressSuggestions" class="address-suggestions"></div>
+                    </div>
+                    
+                    <div id="loading" class="loading">
+                        <div class="spinner"></div>
+                        <p>Analyse des données de marché en cours...</p>
+                    </div>
+
+                    <div id="marketIndicators" class="market-indicators" style="display: none;">
+                        <div class="indicator">
+                            <div class="indicator-value" id="prixM2Moyen">-</div>
+                            <div class="indicator-label">Prix/m² moyen</div>
+                        </div>
+                        <div class="indicator">
+                            <div class="indicator-value" id="evolutionAnnuelle">-</div>
+                            <div class="indicator-label">Évolution/an</div>
+                        </div>
+                        <div class="indicator">
+                            <div class="indicator-value" id="tensionLocative">-</div>
+                            <div class="indicator-label">Tension locative</div>
+                        </div>
+                        <div class="indicator">
+                            <div class="indicator-value" id="rendementZone">-</div>
+                            <div class="indicator-label">Rendement zone</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Frais de notaire (%)</label>
-                    <input type="number" id="fraisNotaire" value="7.5" step="0.1" oninput="calculer()">
+
+                <!-- ACQUISITION -->
+                <div class="section">
+                    <h3><i class="fas fa-euro-sign"></i> Acquisition</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Prix d'achat (€)</label>
+                            <input type="number" id="prixAchat" value="250000" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                        <div class="form-group">
+                            <label>Surface habitable (m²)</label>
+                            <input type="number" id="surface" value="50" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                        <div class="form-group">
+                            <label>Frais de notaire (%)</label>
+                            <input type="number" id="fraisNotaire" value="7.5" step="0.1" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                        <div class="form-group">
+                            <label>Travaux prévus (€)</label>
+                            <input type="number" id="travaux" value="15000" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Travaux (€)</label>
-                    <input type="number" id="travaux" value="15000" oninput="calculer()">
+
+                <!-- FINANCEMENT -->
+                <div class="section">
+                    <h3><i class="fas fa-university"></i> Financement</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Apport personnel (€)</label>
+                            <input type="number" id="apport" value="75000" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                        <div class="form-group">
+                            <label>Taux d'intérêt (%)</label>
+                            <input type="number" id="tauxInteret" value="3.5" step="0.1" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                        <div class="form-group">
+                            <label>Durée du prêt (années)</label>
+                            <input type="number" id="dureeCredit" value="20" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                        <div class="form-group">
+                            <label>Assurance emprunteur (%)</label>
+                            <input type="number" id="assuranceEmprunteur" value="0.35" step="0.01" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REVENUS -->
+                <div class="section">
+                    <h3><i class="fas fa-home"></i> Revenus locatifs</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Loyer mensuel hors charges (€)</label>
+                            <input type="number" id="loyerMensuel" value="1200" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                        <div class="form-group">
+                            <label>Charges récupérables (€/mois)</label>
+                            <input type="number" id="chargesRecuperables" value="50" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                        <div class="form-group">
+                            <label>Vacance locative (%)</label>
+                            <input type="number" id="vacanceLocative" value="5" step="0.5" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                        <div class="form-group">
+                            <label>Révision annuelle (%)</label>
+                            <input type="number" id="revisionAnnuelle" value="2" step="0.1" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CHARGES -->
+                <div class="section">
+                    <h3><i class="fas fa-cogs"></i> Charges & Frais</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Taxe foncière (€/an)</label>
+                            <input type="number" id="taxeFonciere" value="1500" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                        <div class="form-group">
+                            <label>Charges de copropriété (€/mois)</label>
+                            <input type="number" id="chargesCopro" value="80" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                        <div class="form-group">
+                            <label>Assurance PNO (€/an)</label>
+                            <input type="number" id="assurancePNO" value="200" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                        <div class="form-group">
+                            <label>Gestion locative (%)</label>
+                            <input type="number" id="gestionLocative" value="6" step="0.5" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                        <div class="form-group">
+                            <label>Provisions travaux (%/an du loyer)</label>
+                            <input type="number" id="provisionsTravaux" value="8" step="0.5" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                        <div class="form-group">
+                            <label>Comptabilité (€/an)</label>
+                            <input type="number" id="comptabilite" value="300" oninput="calculer(); sauvegarderAutomatique()">
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Section Financement -->
-            <div class="section">
-                <h3 data-icon="🏦">Financement</h3>
-                <div class="form-group">
-                    <label>Apport personnel (€)</label>
-                    <input type="number" id="apport" value="75000" oninput="calculer()">
-                </div>
-                <div class="form-group">
-                    <label>Taux crédit (%)</label>
-                    <input type="number" id="tauxCredit" value="3.5" step="0.1" oninput="calculer()">
-                </div>
-                <div class="form-group">
-                    <label>Durée (années)</label>
-                    <input type="number" id="dureeCredit" value="20" oninput="calculer()">
-                </div>
-            </div>
-
-            <!-- Section Revenus -->
-            <div class="section">
-                <h3 data-icon="🏠">Revenus locatifs</h3>
-                <div class="form-group">
-                    <label>Loyer mensuel (€)</label>
-                    <input type="number" id="loyerMensuel" value="1200" oninput="calculer()">
-                </div>
-                <div class="form-group">
-                    <label>Vacance locative (%)</label>
-                    <input type="number" id="vacanceLocative" value="5" step="0.1" oninput="calculer()">
-                </div>
-            </div>
-
-            <!-- Section Charges -->
-            <div class="section">
-                <h3 data-icon="💸">Charges annuelles</h3>
-                <div class="form-group">
-                    <label>Charges courantes (€/mois)</label>
-                    <input type="number" id="chargesMensuelles" value="150" oninput="calculer()">
-                </div>
-                <div class="form-group">
-                    <label>Taxe foncière (€/an)</label>
-                    <input type="number" id="taxeFonciere" value="1500" oninput="calculer()">
-                </div>
-                <div class="form-group">
-                    <label>Assurance + Divers (€/an)</label>
-                    <input type="number" id="assurance" value="800" oninput="calculer()">
-                </div>
-            </div>
-
-            <!-- Résultats -->
-            <div class="results">
-                <h2>📊 Résultats de l'analyse</h2>
-                <div class="results-grid">
-                    <div class="result-card">
-                        <div class="result-value" id="rentabiliteBrute">5.76%</div>
-                        <div class="result-label">Rentabilité Brute</div>
+            <!-- PANEL DROIT - RESULTATS & IA -->
+            <div class="right-panel">
+                
+                <!-- SCORE IA -->
+                <div class="score-container">
+                    <div class="score-circle" id="scoreCircle">
+                        <div class="score-value" id="scoreValue">85</div>
                     </div>
-                    <div class="result-card">
-                        <div class="result-value" id="rentabiliteNette">3.52%</div>
-                        <div class="result-label">Rentabilité Nette</div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-value" id="cashFlow">-378€</div>
-                        <div class="result-label">Cash-flow Mensuel</div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-value" id="mensualite">1,210€</div>
-                        <div class="result-label">Mensualité Crédit</div>
+                    <div class="score-label" id="scoreLabel">Score d'investissement</div>
+                    <div id="scoreDescription">Excellent investissement</div>
+                </div>
+
+                <!-- RESULTATS FINANCIERS -->
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-label">💰 Rentabilité brute</span>
+                        <span class="result-value positive" id="rentabiliteBrute">5.76%</span>
                     </div>
                 </div>
 
-                <div class="analysis">
-                    <h3>🎯 Analyse de l'investissement</h3>
-                    <div id="statusInvestissement" class="status warning">
-                        ⚠️ Investissement avec effort d'épargne requis
-                    </div>
-                    <div id="recommandations">
-                        <h4>💡 Recommandations :</h4>
-                        <ul id="listeRecommandations">
-                            <li>Cash-flow négatif : prévoir 378€/mois d'effort d'épargne</li>
-                            <li>Rentabilité brute correcte (5.76%)</li>
-                            <li>Considérer une négociation du prix d'achat</li>
-                        </ul>
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-label">📊 Rentabilité nette</span>
+                        <span class="result-value positive" id="rentabiliteNette">3.84%</span>
                     </div>
                 </div>
-            </div>
 
-            <div class="tips">
-                <h4>📚 Aide à l'interprétation :</h4>
-                <ul>
-                    <li><strong>Rentabilité brute :</strong> Excellente >6% | Bonne 4-6% | Faible &lt;4%</li>
-                    <li><strong>Rentabilité nette :</strong> Excellente >4% | Bonne 2-4% | Faible &lt;2%</li>
-                    <li><strong>Cash-flow :</strong> Positif = revenus > mensualités</li>
-                    <li><strong>Conseil :</strong> Un cash-flow négatif n'est pas rédhibitoire si la plus-value est attendue</li>
-                </ul>
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-label">💸 Cash-flow mensuel</span>
+                        <span class="result-value neutral" id="cashFlowMensuel">+156€</span>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-label">🎯 Rentabilité sur apport</span>
+                        <span class="result-value positive" id="rentabiliteApport">12.84%</span>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-header">
+                        <span class="result-label">⏰ Temps de retour sur investissement</span>
+                        <span class="result-value neutral" id="tempsRetour">7.8 ans</span>
+                    </div>
+                </div>
+
+                <!-- RECOMMANDATIONS IA -->
+                <div class="recommendations">
+                    <h3><i class="fas fa-robot"></i> Recommandations IA</h3>
+                    <div id="recommendationsList">
+                        <!-- Généré dynamiquement -->
+                    </div>
+                </div>
+
+                <!-- EXPORT -->
+                <div class="export-section">
+                    <h3><i class="fas fa-download"></i> Export & Partage</h3>
+                    <div class="export-buttons">
+                        <button class="btn-export btn-pdf" onclick="exporterPDF()">
+                            <i class="fas fa-file-pdf"></i> Rapport PDF
+                        </button>
+                        <button class="btn-export btn-excel" onclick="exporterExcel()">
+                            <i class="fas fa-file-excel"></i> Données Excel
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        function calculer() {
-            // Récupération des valeurs
-            const prixAchat = parseFloat(document.getElementById('prixAchat').value) || 0;
-            const fraisNotaire = parseFloat(document.getElementById('fraisNotaire').value) || 0;
-            const travaux = parseFloat(document.getElementById('travaux').value) || 0;
-            const apport = parseFloat(document.getElementById('apport').value) || 0;
-            const tauxCredit = parseFloat(document.getElementById('tauxCredit').value) || 0;
-            const dureeCredit = parseFloat(document.getElementById('dureeCredit').value) || 0;
-            const loyerMensuel = parseFloat(document.getElementById('loyerMensuel').value) || 0;
-            const vacanceLocative = parseFloat(document.getElementById('vacanceLocative').value) || 0;
-            const chargesMensuelles = parseFloat(document.getElementById('chargesMensuelles').value) || 0;
-            const taxeFonciere = parseFloat(document.getElementById('taxeFonciere').value) || 0;
-            const assurance = parseFloat(document.getElementById('assurance').value) || 0;
-
-            // Calculs
-            const fraisNotaireEuros = prixAchat * fraisNotaire / 100;
-            const coutTotal = prixAchat + fraisNotaireEuros + travaux;
-            const montantEmprunte = coutTotal - apport;
+        // ===========================================
+        // VARIABLES GLOBALES
+        // ===========================================
+        
+        let donneesMarche = null;
+        let profilInvestisseur = {
+            experience: 'intermediaire',
+            objectif: 'revenus',
+            toleranceRisque: 'modere'
+        };
+        
+        let autoSaveTimer;
+        
+        // ===========================================
+        // GEOLOCALISATION ET DONNEES DE MARCHE
+        // ===========================================
+        
+        async function rechercherAdresses() {
+            const adresse = document.getElementById('adresse').value;
+            if (adresse.length < 3) {
+                document.getElementById('addressSuggestions').style.display = 'none';
+                return;
+            }
             
-            // Calcul mensualité
-            const tauxMensuel = tauxCredit / 100 / 12;
-            const nbMensualites = dureeCredit * 12;
-            const mensualite = montantEmprunte * (tauxMensuel * Math.pow(1 + tauxMensuel, nbMensualites)) / (Math.pow(1 + tauxMensuel, nbMensualites) - 1);
-            
-            // Revenus et charges
-            const loyersAnnuelsBruts = loyerMensuel * 12;
-            const loyersNetsVacance = loyersAnnuelsBruts * (1 - vacanceLocative / 100);
-            const chargesAnnuelles = chargesMensuelles * 12 + taxeFonciere + assurance;
-            const revenuNetsAnnuels = loyersNetsVacance - chargesAnnuelles;
-            
-            // Rentabilités
-            const rentabiliteBrute = (loyersAnnuelsBruts / coutTotal) * 100;
-            const rentabiliteNette = (revenuNetsAnnuels / coutTotal) * 100;
-            
-            // Cash-flow
-            const cashFlowAnnuel = revenuNetsAnnuels - (mensualite * 12);
-            const cashFlowMensuel = cashFlowAnnuel / 12;
-
-            // Affichage des résultats
-            document.getElementById('rentabiliteBrute').textContent = rentabiliteBrute.toFixed(2) + '%';
-            document.getElementById('rentabiliteNette').textContent = rentabiliteNette.toFixed(2) + '%';
-            document.getElementById('cashFlow').textContent = formatEuros(cashFlowMensuel);
-            document.getElementById('mensualite').textContent = formatEuros(mensualite);
-
-            // Analyse et recommandations
-            analyserInvestissement(rentabiliteBrute, rentabiliteNette, cashFlowMensuel, coutTotal, apport);
+            // Simulation d'API géographique
+            const suggestions = await simulerAPIAdresses(adresse);
+            afficherSuggestionsAdresses(suggestions);
         }
-
-        function analyserInvestissement(rentaBrute, rentaNette, cashFlow, coutTotal, apport) {
-            const statusDiv = document.getElementById('statusInvestissement');
-            const listeRecommandations = document.getElementById('listeRecommandations');
+        
+        async function simulerAPIAdresses(query) {
+            // Simulation d'appel API - remplacer par vraie API
+            const suggestions = [
+                { adresse: `${query}, Paris 11e (75011)`, lat: 48.8566, lng: 2.3522, codePostal: '75011' },
+                { adresse: `${query}, Lyon 3e (69003)`, lat: 45.7578, lng: 4.8320, codePostal: '69003' },
+                { adresse: `${query}, Marseille 1er (13001)`, lat: 43.2965, lng: 5.3698, codePostal: '13001' }
+            ];
             
-            let status = '';
-            let classe = '';
-            let recommandations = [];
-
-            // Détermination du statut
-            if (rentaBrute > 6 && cashFlow > 0) {
-                status = '🟢 Excellent investissement !';
-                classe = 'excellent';
-            } else if (rentaBrute > 4 && cashFlow > -200) {
-                status = '🟡 Bon investissement';
-                classe = 'good';
-            } else if (rentaBrute > 3) {
-                status = '⚠️ Investissement acceptable';
-                classe = 'warning';
-            } else {
-                status = '🔴 Investissement risqué';
-                classe = 'danger';
-            }
-
-            // Recommandations personnalisées
-            if (cashFlow < 0) {
-                recommandations.push(`Effort d'épargne requis : ${formatEuros(Math.abs(cashFlow))}/mois`);
-            } else {
-                recommandations.push(`Surplus mensuel : ${formatEuros(cashFlow)}/mois`);
-            }
-
-            if (rentaBrute < 4) {
-                recommandations.push('Rentabilité brute faible : négocier le prix d\'achat');
-            } else if (rentaBrute > 6) {
-                recommandations.push('Excellente rentabilité brute !');
-            }
-
-            if (cashFlow < -300) {
-                recommandations.push('Cash-flow très négatif : vérifier la viabilité financière');
-            }
-
-            const ratioApport = apport / coutTotal;
-            if (ratioApport > 0.3) {
-                recommandations.push('Apport important : effet de levier réduit');
-            }
-
-            // Mise à jour de l'affichage
-            statusDiv.textContent = status;
-            statusDiv.className = `status ${classe}`;
+            return suggestions.filter(s => 
+                s.adresse.toLowerCase().includes(query.toLowerCase())
+            ).slice(0, 5);
+        }
+        
+        function afficherSuggestionsAdresses(suggestions) {
+            const container = document.getElementById('addressSuggestions');
             
-            listeRecommandations.innerHTML = '';
-            recommandations.forEach(rec => {
-                const li = document.createElement('li');
-                li.textContent = rec;
-                listeRecommandations.appendChild(li);
-            });
+            if (suggestions.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.innerHTML = suggestions.map(suggestion => 
+                `<div class="suggestion-item" onclick="selectionnerAdresse('${suggestion.adresse}', '${suggestion.codePostal}')">${suggestion.adresse}</div>`
+            ).join('');
+            
+            container.style.display = 'block';
         }
-
-        function formatEuros(montant) {
-            const signe = montant < 0 ? '-' : '';
-            const montantAbs = Math.abs(montant);
-            return signe + montantAbs.toLocaleString('fr-FR') + '€';
+        
+        async function selectionnerAdresse(adresse, codePostal) {
+            document.getElementById('adresse').value = adresse;
+            document.getElementById('addressSuggestions').style.display = 'none';
+            
+            // Charger les données de marché
+            await chargerDonneesMarche(codePostal);
+            suggererParametresAutomatiques();
+            calculer();
+            sauvegarderAutomatique();
         }
-
-        // Calcul initial
-        calculer();
-    </script>
-</body>
-</html>
+        
+        async function chargerDonne
