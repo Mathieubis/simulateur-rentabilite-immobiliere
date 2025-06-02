@@ -8,7 +8,7 @@ Description: Simulateur de rentabilité pour investissement immobilier
     <title>Simulateur Immobilier Pro - Normandie</title>
     
     <!-- CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -28,7 +28,7 @@ Description: Simulateur de rentabilité pour investissement immobilier
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -78,11 +78,47 @@ Description: Simulateur de rentabilité pour investissement immobilier
             margin-bottom: 20px;
         }
 
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
         .form-group label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
             color: #555;
+            position: relative;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            color: #667eea;
+            cursor: help;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -125px;
+            font-size: 0.85rem;
+            font-weight: normal;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
         }
 
         .form-group input, .form-group select {
@@ -90,14 +126,16 @@ Description: Simulateur de rentabilité pour investissement immobilier
             padding: 12px 15px;
             border: 2px solid #e1e5e9;
             border-radius: 10px;
-            font-size: 16px;
+            font-size: 1rem;
             transition: all 0.3s ease;
+            background: #f8f9fa;
         }
 
         .form-group input:focus, .form-group select:focus {
             outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .btn {
@@ -106,7 +144,7 @@ Description: Simulateur de rentabilité pour investissement immobilier
             border: none;
             padding: 15px 30px;
             border-radius: 25px;
-            font-size: 16px;
+            font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -115,149 +153,213 @@ Description: Simulateur de rentabilité pour investissement immobilier
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
         }
 
-        .results {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
         }
 
-        .result-item {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
+        .btn-export {
+            background: linear-gradient(45deg, #dc3545, #fd7e14);
         }
 
-        .result-item:hover {
-            transform: translateY(-5px);
-        }
-
-        .result-value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-
-        .result-label {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .score-container {
-            text-align: center;
-            margin: 30px 0;
-        }
-
-        .score-circle {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: white;
-            position: relative;
-        }
-
-        .scenarios-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin: 30px 0;
-        }
-
-        .scenario-card {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .scenario-title {
-            font-weight: bold;
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .scenario-optimiste .scenario-title { background: #d4edda; color: #155724; }
-        .scenario-realiste .scenario-title { background: #fff3cd; color: #856404; }
-        .scenario-pessimiste .scenario-title { background: #f8d7da; color: #721c24; }
-
-        .chart-container {
-            width: 100%;
-            height: 400px;
-            margin: 20px 0;
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-        }
-
-        .recommendations {
+        .results-section {
             background: white;
             border-radius: 20px;
             padding: 30px;
-            margin: 30px 0;
+            margin-bottom: 30px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
 
-        .recommendation-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 10px 0;
-            border-left: 4px solid #667eea;
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
-        .city-info {
-            background: #e3f2fd;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-        }
-
-        .tooltip {
-            position: relative;
-            display: inline-block;
-            cursor: help;
-        }
-
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 200px;
-            background-color: #555;
-            color: #fff;
+        .metric-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
             text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -100px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 12px;
         }
 
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
+        .metric-card h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
         }
 
-        .full-width {
-            grid-column: 1 / -1;
+        .metric-card p {
+            opacity: 0.9;
+        }
+
+        .scenarios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .scenario-card {
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid;
+        }
+
+        .scenario-optimiste {
+            background-color: #d4edda;
+            border-color: #28a745;
+        }
+
+        .scenario-realiste {
+            background-color: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .scenario-pessimiste {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .ai-analysis {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .ai-score {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .score-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .recommendations {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .recommendation-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid;
+        }
+
+        .recommendation-item.success {
+            border-color: #28a745;
+        }
+
+        .recommendation-item.warning {
+            border-color: #ffc107;
+        }
+
+        .recommendation-item.error {
+            border-color: #dc3545;
+        }
+
+        .recommendation-item.info {
+            border-color: #17a2b8;
+        }
+
+        .recommendation-item h4 {
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .estimation-section {
+            background: #f8f9fa;
+            border: 2px dashed #667eea;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .estimation-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .estimation-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+
+        .projection-extended {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .projection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .projection-item {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .projection-item h4 {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .projection-item p {
+            font-size: 1.2rem;
+            font-weight: bold;
         }
 
         @media (max-width: 768px) {
@@ -265,46 +367,36 @@ Description: Simulateur de rentabilité pour investissement immobilier
                 grid-template-columns: 1fr;
             }
             
-            .scenarios-container {
+            .charts-container {
                 grid-template-columns: 1fr;
             }
             
-            .header h1 {
-                font-size: 2rem;
+            .form-row {
+                grid-template-columns: 1fr;
             }
-        }
-
-        .footer {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            text-align: center;
-            padding: 40px 20px;
-            margin-top: 50px;
-            border-radius: 20px 20px 0 0;
         }
     </style>
 </head>
-
 <body>
     <div class="container">
         <div class="header">
-            <h1><i class="fas fa-home"></i> Simulateur Immobilier Pro Normandie</h1>
-            <p>Analyse avancée avec IA prédictive et projections multi-scénarios</p>
+            <h1><i class="fas fa-home"></i> Simulateur Immobilier Pro</h1>
+            <p>Analyse complète avec IA - Spécialiste Normandie</p>
         </div>
 
         <div class="main-content">
+            <!-- Formulaire de paramètres -->
             <div class="card">
-                <h2><i class="fas fa-calculator"></i> Paramètres du Bien</h2>
+                <h2><i class="fas fa-building"></i> Paramètres du bien</h2>
                 
                 <div class="form-group">
                     <label for="ville">
-                        Ville en Normandie 
-                        <span class="tooltip">ℹ️
-                            <span class="tooltiptext">Sélectionnez votre ville pour obtenir des données de marché précises</span>
+                        Ville <span class="tooltip">ℹ️
+                            <span class="tooltiptext">Sélectionnez la ville pour des analyses précises avec données locales</span>
                         </span>
                     </label>
                     <select id="ville" onchange="calculerEtAnalyser()">
-                        <option value="">Choisir une ville...</option>
+                        <option value="">Sélectionnez une ville</option>
                         <option value="falaise">Falaise</option>
                         <option value="vire">Vire en Normandie</option>
                         <option value="lisieux">Lisieux</option>
@@ -314,376 +406,613 @@ Description: Simulateur de rentabilité pour investissement immobilier
                     </select>
                 </div>
 
-                <div class="city-info" id="cityInfo" style="display: none;"></div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="prix">
+                            Prix d'achat (€) <span class="tooltip">ℹ️
+                                <span class="tooltiptext">Prix de vente du bien immobilier</span>
+                            </span>
+                        </label>
+                        <input type="number" id="prix" placeholder="200000" oninput="calculerEtAnalyser()">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fraisAgence">
+                            Frais d'agence (€) <span class="tooltip">ℹ️
+                                <span class="tooltiptext">Commission agence immobilière (généralement 3-8% du prix)</span>
+                            </span>
+                        </label>
+                        <input type="number" id="fraisAgence" placeholder="6000" oninput="calculerEtAnalyser()">
+                    </div>
+                </div>
 
-                <div class="form-group">
-                    <label for="prix">
-                        Prix d'achat (€) 
-                        <span class="tooltip">ℹ️
-                            <span class="tooltiptext">Prix total d'acquisition du bien immobilier</span>
-                        </span>
-                    </label>
-                    <input type="number" id="prix" placeholder="ex: 200000" oninput="calculerEtAnalyser()">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="surface">
+                            Surface (m²) <span class="tooltip">ℹ️
+                                <span class="tooltiptext">Surface habitable pour calculer prix/m² et comparer au marché</span>
+                            </span>
+                        </label>
+                        <input type="number" id="surface" placeholder="60" oninput="calculerEtAnalyser()">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="travaux">
+                            Travaux (€) <span class="tooltip">ℹ️
+                                <span class="tooltiptext">Coût des travaux de rénovation nécessaires</span>
+                            </span>
+                        </label>
+                        <input type="number" id="travaux" placeholder="12000" oninput="calculerEtAnalyser()">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="mobilier">
+                            Mobilier (€) <span class="tooltip">ℹ️
+                                <span class="tooltiptext">Coût d'ameublement pour location meublée (4000-8000€ moyen)</span>
+                            </span>
+                        </label>
+                        <input type="number" id="mobilier" placeholder="5000" oninput="calculerEtAnalyser()">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="apport">
+                            Apport personnel (€) <span class="tooltip">ℹ️
+                                <span class="tooltiptext">Montant de votre apport pour l'achat</span>
+                            </span>
+                        </label>
+                        <input type="number" id="apport" placeholder="50000" oninput="calculerEtAnalyser()">
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="surface">
-                        Surface (m²) 
-                        <span class="tooltip">ℹ️
-                            <span class="tooltiptext">Surface habitable pour calcul du prix/m² et analyse marché</span>
+                    <label for="typeLocation">
+                        Type de location <span class="tooltip">ℹ️
+                            <span class="tooltiptext">Impacte l'estimation du loyer potentiel</span>
                         </span>
                     </label>
-                    <input type="number" id="surface" placeholder="ex: 80" oninput="calculerEtAnalyser()">
+                    <select id="typeLocation" onchange="calculerEtAnalyser()">
+                        <option value="vide">Location vide</option>
+                        <option value="meublee">Location meublée</option>
+                        <option value="colocation">Colocation</option>
+                    </select>
                 </div>
 
-                <div class="form-group">
-                    <label for="apport">
-                        Apport personnel (€) 
-                        <span class="tooltip">ℹ️
-                            <span class="tooltiptext">Montant de votre investissement personnel initial</span>
-                        </span>
-                    </label>
-                    <input type="number" id="apport" placeholder="ex: 40000" oninput="calculerEtAnalyser()">
+                <!-- Estimation de loyer -->
+                <div class="estimation-section">
+                    <h3><i class="fas fa-calculator"></i> Estimation Loyer Potentiel</h3>
+                    <button type="button" class="btn btn-success" onclick="estimerLoyer()">
+                        <i class="fas fa-magic"></i> Estimer le loyer
+                    </button>
+                    <div id="estimationResults"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="loyerMensuel">
-                        Loyer mensuel (€) 
-                        <span class="tooltip">ℹ️
-                            <span class="tooltiptext">Loyer mensuel hors charges que vous percevrez</span>
+                        Loyer mensuel (€) <span class="tooltip">ℹ️
+                            <span class="tooltiptext">Loyer hors charges prévu ou constaté</span>
                         </span>
                     </label>
-                    <input type="number" id="loyerMensuel" placeholder="ex: 800" oninput="calculerEtAnalyser()">
+                    <input type="number" id="loyerMensuel" placeholder="800" oninput="calculerEtAnalyser()">
                 </div>
 
                 <div class="form-group">
                     <label for="chargesAnnuelles">
-                        Charges annuelles (€) 
-                        <span class="tooltip">ℹ️
-                            <span class="tooltiptext">Taxes, assurances, syndic, entretien...</span>
+                        Charges annuelles (€) <span class="tooltip">ℹ️
+                            <span class="tooltiptext">Taxes foncières + charges de copropriété + assurances + gestion</span>
                         </span>
                     </label>
-                    <input type="number" id="chargesAnnuelles" placeholder="ex: 2000" oninput="calculerEtAnalyser()">
+                    <input type="number" id="chargesAnnuelles" placeholder="2500" oninput="calculerEtAnalyser()">
                 </div>
 
-                <div class="form-group">
-                    <label for="tauxEmprunt">Taux d'emprunt (%) <span class="tooltip">ℹ️
-                            <span class="tooltiptext">Taux d'intérêt annuel de votre crédit immobilier</span>
-                        </span>
-                    </label>
-                    <input type="number" step="0.01" id="tauxEmprunt" placeholder="ex: 3.5" oninput="calculerEtAnalyser()">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tauxEmprunt">Taux d'emprunt (%)</label>
+                        <input type="number" step="0.1" id="tauxEmprunt" placeholder="3.5" oninput="calculerEtAnalyser()">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dureeEmprunt">Durée (années)</label>
+                        <input type="number" id="dureeEmprunt" placeholder="20" oninput="calculerEtAnalyser()">
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="dureeEmprunt">Durée d'emprunt (années)</label>
-                    <input type="number" id="dureeEmprunt" placeholder="ex: 20" oninput="calculerEtAnalyser()">
-                </div>
-
-                <button class="btn" onclick="calculerEtAnalyser()">
-                    <i class="fas fa-chart-line"></i> Analyser l'investissement
-                </button>
-                
-                <button class="btn" onclick="exporterExcel()">
-                    <i class="fas fa-file-excel"></i> Exporter Excel
+                <button type="button" class="btn" onclick="calculerEtAnalyser()">
+                    <i class="fas fa-sync-alt"></i> Analyser le projet
                 </button>
             </div>
 
+            <!-- Résultats principaux -->
             <div class="card">
-                <h2><i class="fas fa-chart-bar"></i> Résultats Instantanés</h2>
-                
-                <div class="results">
-                    <div class="result-item">
-                        <div class="result-value" id="rentabiliteBrute">-</div>
-                        <div class="result-label">Rentabilité Brute</div>
-                    </div>
-                    <div class="result-item">
-                        <div class="result-value" id="rentabiliteNette">-</div>
-                        <div class="result-label">Rentabilité Nette</div>
-                    </div>
-                    <div class="result-item">
-                        <div class="result-value" id="cashFlowMensuel">-</div>
-                        <div class="result-label">Cash-Flow Mensuel</div>
-                    </div>
-                    <div class="result-item">
-                        <div class="result-value" id="tempsRetour">-</div>
-                        <div class="result-label">Retour sur Apport</div>
-                    </div>
-                    <div class="result-item">
-                        <div class="result-value" id="prixM2">-</div>
-                        <div class="result-label">Prix au m²</div>
-                    </div>
-                    <div class="result-item">
-                        <div class="result-value" id="loyerM2">-</div>
-                        <div class="result-label">Loyer au m²</div>
-                    </div>
-                </div>
-
-                <div class="score-container">
-                    <div class="score-circle" id="scoreCircle">
-                        <span id="scoreValue">-</span>
-                    </div>
-                    <h3 id="scoreDescription">Analysez votre projet</h3>
-                    <p id="scoreExplication"></p>
+                <h2><i class="fas fa-chart-line"></i> Résultats de l'analyse</h2>
+                <div id="resultats">
+                    <p style="text-align: center; color: #666;">Remplissez les champs pour voir l'analyse complète</p>
                 </div>
             </div>
         </div>
 
-        <!-- Projections Multi-Scénarios -->
-        <div class="card full-width">
-            <h2><i class="fas fa-crystal-ball"></i> Projections sur 10 ans</h2>
-            <div class="scenarios-container">
+        <!-- Section IA -->
+        <div class="ai-analysis" id="analysisSection" style="display: none;">
+            <h2><i class="fas fa-brain"></i> Analyse IA Avancée</h2>
+            <div class="ai-score">
+                <div class="score-circle" id="scoreCircle">-</div>
+                <div>
+                    <h3 id="scoreText">Score d'investissement</h3>
+                    <p id="scoreDescription">Analyse en cours...</p>
+                </div>
+            </div>
+            <div class="recommendations" id="analysesIA"></div>
+        </div>
+
+        <!-- Projections étendues -->
+        <div class="projection-extended" id="projectionSection" style="display: none;">
+            <h2><i class="fas fa-chart-area"></i> Projections Patrimoniales Étendues</h2>
+            <div class="projection-grid" id="projectionsEtendues"></div>
+        </div>
+
+        <!-- Scénarios -->
+        <div class="results-section" id="scenariosSection" style="display: none;">
+            <h2><i class="fas fa-dice"></i> Scénarios d'évolution</h2>
+            <div class="scenarios-grid">
                 <div class="scenario-card scenario-optimiste">
-                    <div class="scenario-title">🚀 Optimiste</div>
+                    <h3>🚀 Scénario Optimiste</h3>
                     <div id="scenarioOptimiste"></div>
                 </div>
                 <div class="scenario-card scenario-realiste">
-                    <div class="scenario-title">📊 Réaliste</div>
+                    <h3>📊 Scénario Réaliste</h3>
                     <div id="scenarioRealiste"></div>
                 </div>
                 <div class="scenario-card scenario-pessimiste">
-                    <div class="scenario-title">⚠️ Pessimiste</div>
+                    <h3>⚠️ Scénario Pessimiste</h3>
                     <div id="scenarioPessimiste"></div>
                 </div>
             </div>
-            
-            <div class="chart-container">
-                <canvas id="projectionChart"></canvas>
+        </div>
+
+        <!-- Graphiques -->
+        <div class="charts-container" id="chartsSection" style="display: none;">
+            <div class="chart-card">
+                <h3>Évolution Patrimoniale</h3>
+                <div class="chart-container">
+                    <canvas id="projectionChart"></canvas>
+                </div>
             </div>
-        </div>
-
-        <!-- Analyse IA Avancée -->
-        <div class="recommendations">
-            <h2><i class="fas fa-robot"></i> Analyse IA Avancée</h2>
-            <div id="analysesIA"></div>
-        </div>
-
-        <!-- Graphiques Avancés -->
-        <div class="card full-width">
-            <h2><i class="fas fa-chart-area"></i> Visualisations Avancées</h2>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="chart-card">
+                <h3>Répartition Rentabilité</h3>
                 <div class="chart-container">
                     <canvas id="rentabiliteChart"></canvas>
                 </div>
+            </div>
+        </div>
+
+        <div class="charts-container" id="chartsSection2" style="display: none;">
+            <div class="chart-card">
+                <h3>Cash-Flow Mensuel</h3>
                 <div class="chart-container">
                     <canvas id="cashflowChart"></canvas>
                 </div>
             </div>
+            <div class="chart-card">
+                <h3>Projection Long Terme</h3>
+                <div class="chart-container">
+                    <canvas id="longTermChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bouton export -->
+        <div style="text-align: center; margin-top: 30px;" id="exportSection" style="display: none;">
+            <button type="button" class="btn btn-export" onclick="exporterPDF()">
+                <i class="fas fa-file-pdf"></i> Exporter en PDF
+            </button>
         </div>
     </div>
 
-    <div class="footer">
-        <p><i class="fas fa-chart-line"></i> Simulateur Immobilier Pro Normandie - Analyse avancée avec IA</p>
-        <p>Développé pour les investisseurs exigeants - Version 2.0</p>
-    </div>
-
     <script>
-        // Données des villes normandes
+        // Variables globales pour les graphiques
+        let projectionChart = null;
+        let rentabiliteChart = null;
+        let cashflowChart = null;
+        let longTermChart = null;
+
+        // Données des villes de Normandie
         const villesData = {
             falaise: {
                 nom: "Falaise",
                 prixM2Moyen: 1200,
                 loyerM2Moyen: 8.5,
-                croissancePrix: 2.1,
+                croissancePrix: 1.8,
+                attractivite: 6,
                 tension: "modérée",
-                attractivite: 7,
-                risque: "faible"
+                coeffMeublee: 1.25,
+                coeffColocation: 1.4
             },
             vire: {
-                nom: "Vire en Normandie", 
+                nom: "Vire en Normandie",
                 prixM2Moyen: 1100,
                 loyerM2Moyen: 7.8,
-                croissancePrix: 1.8,
+                croissancePrix: 1.5,
+                attractivite: 5,
                 tension: "faible",
-                attractivite: 6,
-                risque: "faible"
+                coeffMeublee: 1.2,
+                coeffColocation: 1.3
             },
             lisieux: {
                 nom: "Lisieux",
-                prixM2Moyen: 1400,
+                prixM2Moyen: 1350,
                 loyerM2Moyen: 9.2,
-                croissancePrix: 2.5,
+                croissancePrix: 2.1,
+                attractivite: 7,
                 tension: "modérée",
-                attractivite: 7.5,
-                risque: "modéré"
+                coeffMeublee: 1.3,
+                coeffColocation: 1.45
             },
             herouville: {
                 nom: "Hérouville Saint-Clair",
                 prixM2Moyen: 1800,
                 loyerM2Moyen: 11.5,
-                croissancePrix: 3.2,
+                croissancePrix: 2.8,
+                attractivite: 8,
                 tension: "forte",
-                attractivite: 8.5,
-                risque: "modéré"
+                coeffMeublee: 1.35,
+                coeffColocation: 1.5
             },
             cherbourg: {
                 nom: "Cherbourg-en-Cotentin",
-                prixM2Moyen: 1500,
+                prixM2Moyen: 1450,
                 loyerM2Moyen: 9.8,
                 croissancePrix: 2.3,
+                attractivite: 7,
                 tension: "modérée",
-                attractivite: 8,
-                risque: "faible"
+                coeffMeublee: 1.28,
+                coeffColocation: 1.42
             },
             carentan: {
                 nom: "Carentan-les-Marais",
                 prixM2Moyen: 1000,
                 loyerM2Moyen: 7.2,
-                croissancePrix: 1.5,
+                croissancePrix: 1.2,
+                attractivite: 4,
                 tension: "faible",
-                attractivite: 5.5,
-                risque: "faible"
+                coeffMeublee: 1.15,
+                coeffColocation: 1.25
             }
         };
-
-        let projectionChart, rentabiliteChart, cashflowChart;
 
         function calculerEtAnalyser() {
             const ville = document.getElementById('ville').value;
             const prix = parseFloat(document.getElementById('prix').value) || 0;
+            const fraisAgence = parseFloat(document.getElementById('fraisAgence').value) || 0;
             const surface = parseFloat(document.getElementById('surface').value) || 0;
+            const travaux = parseFloat(document.getElementById('travaux').value) || 0;
+            const mobilier = parseFloat(document.getElementById('mobilier').value) || 0;
             const apport = parseFloat(document.getElementById('apport').value) || 0;
             const loyerMensuel = parseFloat(document.getElementById('loyerMensuel').value) || 0;
             const chargesAnnuelles = parseFloat(document.getElementById('chargesAnnuelles').value) || 0;
-            const tauxEmprunt = parseFloat(document.getElementById('tauxEmprunt').value) || 0;
-            const dureeEmprunt = parseFloat(document.getElementById('dureeEmprunt').value) || 0;
 
-            if (ville) {
-                afficherInfoVille(ville);
+            if (!prix || !loyerMensuel || !surface) {
+                document.getElementById('resultats').innerHTML = 
+                    '<p style="text-align: center; color: #666;">Remplissez au minimum le prix, la surface et le loyer pour voir l\'analyse</p>';
+                return;
             }
 
-            if (prix && surface && loyerMensuel) {
-                calculerResultats(prix, surface, apport, loyerMensuel, chargesAnnuelles, tauxEmprunt, dureeEmprunt, ville);
-                genererScenarios(prix, loyerMensuel, chargesAnnuelles, ville);
-                analyseIA(prix, surface, loyerMensuel, ville);
-                creerGraphiques(prix, loyerMensuel, chargesAnnuelles, ville);
-            }
-        }
-
-        function afficherInfoVille(villeKey) {
-            const ville = villesData[villeKey];
-            if (ville) {
-                const infoDiv = document.getElementById('cityInfo');
-                infoDiv.style.display = 'block';
-                infoDiv.innerHTML = `
-                    <h4><i class="fas fa-map-marker-alt"></i> ${ville.nom}</h4>
-                    <p><strong>Prix moyen :</strong> ${ville.prixM2Moyen}€/m² | <strong>Loyer moyen :</strong> ${ville.loyerM2Moyen}€/m²</p>
-                    <p><strong>Croissance :</strong> +${ville.croissancePrix}%/an | <strong>Tension locative :</strong> ${ville.tension}</p>
-                    <p><strong>Attractivité :</strong> ${ville.attractivite}/10 | <strong>Risque :</strong> ${ville.risque}</p>
-                `;
-            }
-        }
-
-        function calculerResultats(prix, surface, apport, loyerMensuel, chargesAnnuelles, tauxEmprunt, dureeEmprunt, ville) {
-            // Calculs de base
+            // Calcul du prix d'achat total (prix + frais + travaux + mobilier)
+            const prixTotal = prix + fraisAgence + travaux + mobilier;
             const loyerAnnuel = loyerMensuel * 12;
-            const rentabiliteBrute = ((loyerAnnuel / prix) * 100);
-            const rentabiliteNette = (((loyerAnnuel - chargesAnnuelles) / prix) * 100);
             
-            // Calcul mensualité emprunt
-            const montantEmprunte = prix - apport;
-            const tauxMensuel = tauxEmprunt / 100 / 12;
-            const nbMensualites = dureeEmprunt * 12;
-            const mensualite = montantEmprunte > 0 && tauxMensuel > 0 ? 
-                montantEmprunte * (tauxMensuel * Math.pow(1 + tauxMensuel, nbMensualites)) / 
-                (Math.pow(1 + tauxMensuel, nbMensualites) - 1) : 0;
-            
-            const cashFlowMensuel = loyerMensuel - (chargesAnnuelles / 12) - mensualite;
-            const tempsRetour = apport > 0 ? (apport / (loyerAnnuel - chargesAnnuelles)) : 0;
-            
-            // Prix et loyer au m²
+            // Calculs de rentabilité
+            const rentabiliteBrute = (loyerAnnuel / prixTotal) * 100;
+            const rentabiliteNette = ((loyerAnnuel - chargesAnnuelles) / prixTotal) * 100;
             const prixM2 = prix / surface;
+            const prixTotalM2 = prixTotal / surface;
             const loyerM2 = loyerMensuel / surface;
 
-            // Affichage des résultats
-            document.getElementById('rentabiliteBrute').textContent = rentabiliteBrute.toFixed(2) + '%';
-            document.getElementById('rentabiliteNette').textContent = rentabiliteNette.toFixed(2) + '%';
-            document.getElementById('cashFlowMensuel').textContent = cashFlowMensuel.toFixed(0) + '€';
-            document.getElementById('tempsRetour').textContent = tempsRetour.toFixed(1) + ' ans';
-            document.getElementById('prixM2').textContent = prixM2.toFixed(0) + '€';
-            document.getElementById('loyerM2').textContent = loyerM2.toFixed(1) + '€';
+            // Calcul emprunt
+            const montantEmprunte = Math.max(0, prixTotal - apport);
+            const tauxEmprunt = parseFloat(document.getElementById('tauxEmprunt').value) || 0;
+            const dureeEmprunt = parseFloat(document.getElementById('dureeEmprunt').value) || 0;
+            
+            let mensualite = 0;
+            if (montantEmprunte > 0 && tauxEmprunt > 0 && dureeEmprunt > 0) {
+                const tauxMensuel = tauxEmprunt / 100 / 12;
+                const nbMensualites = dureeEmprunt * 12;
+                mensualite = montantEmprunte * (tauxMensuel * Math.pow(1 + tauxMensuel, nbMensualites)) / 
+                            (Math.pow(1 + tauxMensuel, nbMensualites) - 1);
+            }
 
-            // Score IA
-            calculerScore(rentabiliteNette, cashFlowMensuel, prixM2, loyerM2, ville);
+            const cashflowMensuel = loyerMensuel - (chargesAnnuelles / 12) - mensualite;
+
+            // Affichage des résultats
+            document.getElementById('resultats').innerHTML = `
+                <div class="results-grid">
+                    <div class="metric-card">
+                        <h3>${rentabiliteBrute.toFixed(1)}%</h3>
+                        <p>Rentabilité Brute</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3>${rentabiliteNette.toFixed(1)}%</h3>
+                        <p>Rentabilité Nette</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3>${prixTotalM2.toFixed(0)}€</h3>
+                        <p>Prix total /m²</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3>${loyerM2.toFixed(1)}€</h3>
+                        <p>Loyer /m²</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3>${cashflowMensuel.toFixed(0)}€</h3>
+                        <p>Cash-flow mensuel</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3>${prixTotal.toLocaleString()}€</h3>
+                        <p>Investissement total</p>
+                    </div>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-top: 20px;">
+                    <h4>Détail investissement :</h4>
+                    <p>• Prix d'achat : ${prix.toLocaleString()}€</p>
+                    <p>• Frais d'agence : ${fraisAgence.toLocaleString()}€</p>
+                    <p>• Travaux : ${travaux.toLocaleString()}€</p>
+                    <p>• Mobilier : ${mobilier.toLocaleString()}€</p>
+                    <p><strong>Total : ${prixTotal.toLocaleString()}€</strong></p>
+                </div>
+            `;
+
+            // Afficher les sections
+            document.getElementById('analysisSection').style.display = 'block';
+            document.getElementById('projectionSection').style.display = 'block';
+            document.getElementById('scenariosSection').style.display = 'block';
+            document.getElementById('chartsSection').style.display = 'block';
+            document.getElementById('chartsSection2').style.display = 'block';
+            document.getElementById('exportSection').style.display = 'block';
+
+            // Analyses avancées
+            analyseIA(prixTotal, surface, loyerMensuel, ville);
+            genererScenarios(prixTotal, loyerMensuel, chargesAnnuelles, ville);
+            genererProjectionsEtendues(prixTotal, loyerMensuel, chargesAnnuelles, ville);
+            creerGraphiques(prixTotal, loyerMensuel, chargesAnnuelles, ville);
+            sauvegarderLocalement();
         }
 
-        function calculerScore(rentabiliteNette, cashFlowMensuel, prixM2, loyerM2, ville) {
-            let score = 0;
-            let evaluation = "";
-            let explication = "";
+        function estimerLoyer() {
+            const ville = document.getElementById('ville').value;
+            const surface = parseFloat(document.getElementById('surface').value) || 0;
+                        const typeLocation = document.getElementById('typeLocation').value;
 
-            // Rentabilité (40 points max)
-            if (rentabiliteNette >= 8) score += 40;
-            else if (rentabiliteNette >= 6) score += 30;
-            else if (rentabiliteNette >= 4) score += 20;
-            else score += 10;
+            if (!ville || !surface) {
+                alert('Veuillez sélectionner une ville et renseigner la surface');
+                return;
+            }
 
-            // Cash-flow (30 points max)
-            if (cashFlowMensuel >= 200) score += 30;
-            else if (cashFlowMensuel >= 0) score += 20;
-            else if (cashFlowMensuel >= -100) score += 10;
-            else score += 0;
+            const donneesVille = villesData[ville];
+            const loyerBaseM2 = donneesVille.loyerM2Moyen;
+            
+            let loyerEstime = 0;
+            let coefficient = 1;
+            let description = "";
 
-            // Analyse marché ville (20 points max)
+            switch(typeLocation) {
+                case 'vide':
+                    loyerEstime = loyerBaseM2 * surface;
+                    description = "Location vide classique";
+                    break;
+                case 'meublee':
+                    coefficient = donneesVille.coeffMeublee;
+                    loyerEstime = loyerBaseM2 * surface * coefficient;
+                    description = "Location meublée (+20-35% vs vide)";
+                    break;
+                case 'colocation':
+                    coefficient = donneesVille.coeffColocation;
+                    loyerEstime = loyerBaseM2 * surface * coefficient;
+                    description = "Colocation (+25-50% vs vide)";
+                    break;
+            }
+
+            // Fourchette d'estimation
+            const loyerMin = Math.round(loyerEstime * 0.85);
+            const loyerMax = Math.round(loyerEstime * 1.15);
+            loyerEstime = Math.round(loyerEstime);
+
+            document.getElementById('estimationResults').innerHTML = `
+                <div class="estimation-results">
+                    <div class="estimation-card">
+                        <h4>Estimation ${typeLocation}</h4>
+                        <p style="font-size: 1.2rem; font-weight: bold; color: #667eea;">
+                            ${loyerEstime}€/mois
+                        </p>
+                        <small>${description}</small>
+                    </div>
+                    <div class="estimation-card">
+                        <h4>Fourchette</h4>
+                        <p style="color: #28a745;">Min: ${loyerMin}€</p>
+                        <p style="color: #dc3545;">Max: ${loyerMax}€</p>
+                        <small>Selon l'état et équipements</small>
+                    </div>
+                    <div class="estimation-card">
+                        <h4>Marché ${donneesVille.nom}</h4>
+                        <p>${donneesVille.loyerM2Moyen}€/m²</p>
+                        <p>Tension: ${donneesVille.tension}</p>
+                        <small>Données locales</small>
+                    </div>
+                </div>
+                <button type="button" class="btn" onclick="appliquerEstimation(${loyerEstime})" style="margin-top: 15px;">
+                    <i class="fas fa-check"></i> Utiliser cette estimation
+                </button>
+            `;
+        }
+
+        function appliquerEstimation(montant) {
+            document.getElementById('loyerMensuel').value = montant;
+            calculerEtAnalyser();
+        }
+
+        function analyseIA(prixTotal, surface, loyerMensuel, ville) {
+            const analyses = [];
+            const prixM2 = prixTotal / surface;
+            const loyerM2 = loyerMensuel / surface;
+            const rentabiliteBrute = (loyerMensuel * 12 / prixTotal) * 100;
+            
+            let score = 50; // Score de base
+            
+            // Analyse du prix au m²
             if (ville && villesData[ville]) {
                 const donneesVille = villesData[ville];
                 const ecartPrix = ((prixM2 - donneesVille.prixM2Moyen) / donneesVille.prixM2Moyen) * 100;
                 
-                if (ecartPrix <= 0) score += 15; // Prix en dessous du marché
-                else if (ecartPrix <= 10) score += 10;
-                else score += 5;
+                if (ecartPrix < -15) {
+                    analyses.push({
+                        type: 'success',
+                        icon: '🎯',
+                        titre: 'Prix très attractif',
+                        contenu: `Prix ${Math.abs(ecartPrix).toFixed(1)}% sous le marché (${donneesVille.prixM2Moyen}€/m²). Excellente opportunité d'achat !`
+                    });
+                    score += 20;
+                } else if (ecartPrix > 20) {
+                    analyses.push({
+                        type: 'warning',
+                        icon: '⚠️',
+                        titre: 'Prix surévalué',
+                        contenu: `Prix ${ecartPrix.toFixed(1)}% au-dessus du marché. Négociation recommandée pour atteindre ${donneesVille.prixM2Moyen}€/m².`
+                    });
+                    score -= 15;
+                }
 
-                score += donneesVille.attractivite <= 8 ? donneesVille.attractivite : 5;
+                // Analyse du loyer
+                const ecartLoyer = ((loyerM2 - donneesVille.loyerM2Moyen) / donneesVille.loyerM2Moyen) * 100;
+                if (ecartLoyer > 15) {
+                    analyses.push({
+                        type: 'warning',
+                        icon: '📊',
+                        titre: 'Loyer optimiste',
+                        contenu: `Loyer ${ecartLoyer.toFixed(1)}% au-dessus du marché local (${donneesVille.loyerM2Moyen}€/m²). Vérifiez la faisabilité.`
+                    });
+                    score -= 10;
+                } else if (ecartLoyer < -10) {
+                    analyses.push({
+                        type: 'success',
+                        icon: '💰',
+                        titre: 'Potentiel de revalorisation',
+                        contenu: `Loyer sous-évalué. Possibilité d'augmentation vers ${donneesVille.loyerM2Moyen}€/m².`
+                    });
+                    score += 10;
+                }
             }
 
-            // Surface analyse (10 points max)
-            const surface = parseFloat(document.getElementById('surface').value) || 0;
-            if (surface >= 30 && surface <= 80) score += 10;
-            else if (surface >= 20 && surface <= 100) score += 7;
-            else score += 3;
-
-            // Détermination de l'évaluation
-            if (score >= 80) {
-                evaluation = "Excellent investissement";
-                explication = "Projet très profitable avec de faibles risques";
-            } else if (score >= 60) {
-                evaluation = "Bon investissement";
-                explication = "Projet intéressant avec potentiel de rentabilité";
-            } else if (score >= 40) {
-                evaluation = "Investissement moyen";
-                explication = "Projet à optimiser ou renégocier";
-            } else {
-                evaluation = "Investissement risqué";
-                explication = "Projet à éviter en l'état actuel";
+            // Analyse de la rentabilité
+            if (rentabiliteBrute >= 8) {
+                analyses.push({
+                    type: 'success',
+                    icon: '🚀',
+                    titre: 'Excellente rentabilité',
+                    contenu: `Rentabilité brute de ${rentabiliteBrute.toFixed(1)}% - Au-dessus des standards du marché (6-7%).`
+                });
+                score += 15;
+            } else if (rentabiliteBrute < 5) {
+                analyses.push({
+                    type: 'error',
+                    icon: '📉',
+                    titre: 'Rentabilité faible',
+                    contenu: `Rentabilité brute de ${rentabiliteBrute.toFixed(1)}% en dessous des standards. Investissement peu attractif.`
+                });
+                score -= 20;
             }
+
+            // Conseils personnalisés
+            analyses.push({
+                type: 'info',
+                icon: '💡',
+                titre: 'Conseil IA',
+                contenu: score > 70 ? 
+                    'Investissement très prometteur ! Analysez le quartier et l\'état du bien avant de vous décider.' :
+                    score > 50 ?
+                    'Investissement correct mais perfectible. Négociez le prix ou cherchez des leviers d\'optimisation.' :
+                    'Investissement risqué. Reconsidérez vos paramètres ou explorez d\'autres opportunités.'
+            });
 
             // Affichage du score
+            score = Math.max(0, Math.min(100, score));
             const scoreCircle = document.getElementById('scoreCircle');
-            document.getElementById('scoreValue').textContent = score;
-            document.getElementById('scoreDescription').textContent = evaluation;
-            document.getElementById('scoreExplication').textContent = explication;
+            const scoreText = document.getElementById('scoreText');
+            const scoreDescription = document.getElementById('scoreDescription');
 
-            // Couleur du score
-            if (score >= 80) scoreCircle.style.background = 'linear-gradient(45deg, #28a745, #20c997)';
-            else if (score >= 60) scoreCircle.style.background = 'linear-gradient(45deg, #ffc107, #fd7e14)';
-            else if (score >= 40) scoreCircle.style.background = 'linear-gradient(45deg, #fd7e14, #dc3545)';
-            else scoreCircle.style.background = 'linear-gradient(45deg, #dc3545, #6f42c1)';
+            scoreCircle.textContent = score;
+            scoreCircle.style.background = score >= 70 ? '#28a745' : score >= 50 ? '#ffc107' : '#dc3545';
+            
+            scoreText.textContent = `Score : ${score}/100`;
+            scoreDescription.textContent = 
+                score >= 70 ? 'Investissement recommandé' :
+                score >= 50 ? 'Investissement correct' : 'Investissement à éviter';
+
+            // Affichage des analyses
+            document.getElementById('analysesIA').innerHTML = analyses.map(analyse => `
+                <div class="recommendation-item ${analyse.type}">
+                    <h4>${analyse.icon} ${analyse.titre}</h4>
+                    <p>${analyse.contenu}</p>
+                </div>
+            `).join('');
         }
 
-        function genererScenarios(prix, loyerMensuel, chargesAnnuelles, ville) {
-            const villeData = ville ? villesData[ville] : null;
-            const croissanceBase = villeData ? villeData.croissancePrix : 2;
+        function genererProjectionsEtendues(prixTotal, loyerMensuel, chargesAnnuelles, ville) {
+            const croissanceBase = ville && villesData[ville] ? villesData[ville].croissancePrix : 2;
+            const projections = [];
+            
+            const periodes = [5, 10, 15, 20, 25];
+            
+            periodes.forEach(annee => {
+                const projection = calculerProjectionAnnee(prixTotal, loyerMensuel, chargesAnnuelles, croissanceBase, annee);
+                projections.push({
+                    annee: annee,
+                    patrimoine: projection.patrimoine,
+                    cashflow: projection.cashflowCumule
+                });
+            });
+
+            document.getElementById('projectionsEtendues').innerHTML = projections.map(proj => `
+                <div class="projection-item">
+                    <h4>Année ${proj.annee}</h4>
+                    <p>${proj.patrimoine}</p>
+                    <small>+${proj.cashflow} cash-flow</small>
+                </div>
+            `).join('');
+        }
+
+        function calculerProjectionAnnee(prix, loyerMensuel, chargesAnnuelles, croissancePrix, annees) {
+            let valeurBien = prix;
+            let loyer = loyerMensuel;
+            let cashflowCumule = 0;
+
+            for (let i = 1; i <= annees; i++) {
+                valeurBien = valeurBien * (1 + croissancePrix / 100);
+                loyer = loyer * (1 + 0.02); // Croissance loyer 2%
+                
+                const cashflowAnnuel = (loyer * 12) - chargesAnnuelles - (chargesAnnuelles * 0.05);
+                cashflowCumule += Math.max(cashflowAnnuel, 0);
+            }
+
+            return {
+                patrimoine: Math.round(valeurBien).toLocaleString() + '€',
+                cashflowCumule: Math.round(cashflowCumule).toLocaleString() + '€'
+            };
+        }
+
+        function genererScenarios(prixTotal, loyerMensuel, chargesAnnuelles, ville) {
+            const croissanceBase = ville && villesData[ville] ? villesData[ville].croissancePrix : 2;
 
             // Scénario Optimiste
-            const optimiste = calculerProjection(prix, loyerMensuel, chargesAnnuelles, croissanceBase + 1, 0.03);
+            const optimiste = calculerProjection(prixTotal, loyerMensuel, chargesAnnuelles, croissanceBase + 1.5, 0.035);
             document.getElementById('scenarioOptimiste').innerHTML = `
                 <p><strong>Année 5:</strong> ${optimiste.annee5.patrimoine}</p>
                 <p><strong>Année 10:</strong> ${optimiste.annee10.patrimoine}</p>
                 <p><strong>Cash-flow cumulé:</strong> ${optimiste.cashflowCumule}</p>
-                <small>+COVID recovery, inflation contrôlée</small>
+                <small>Marché favorable, forte demande locative</small>
             `;
 
-            // Scénario Réaliste  
-            const realiste = calculerProjection(prix, loyerMensuel, chargesAnnuelles, croissanceBase, 0.025);
+            // Scénario Réaliste
+            const realiste = calculerProjection(prixTotal, loyerMensuel, chargesAnnuelles, croissanceBase, 0.025);
             document.getElementById('scenarioRealiste').innerHTML = `
                 <p><strong>Année 5:</strong> ${realiste.annee5.patrimoine}</p>
                 <p><strong>Année 10:</strong> ${realiste.annee10.patrimoine}</p>
@@ -692,7 +1021,7 @@ Description: Simulateur de rentabilité pour investissement immobilier
             `;
 
             // Scénario Pessimiste
-            const pessimiste = calculerProjection(prix, loyerMensuel, chargesAnnuelles, Math.max(0, croissanceBase - 1), 0.015);
+            const pessimiste = calculerProjection(prixTotal, loyerMensuel, chargesAnnuelles, Math.max(0, croissanceBase - 1), 0.015);
             document.getElementById('scenarioPessimiste').innerHTML = `
                 <p><strong>Année 5:</strong> ${pessimiste.annee5.patrimoine}</p>
                 <p><strong>Année 10:</strong> ${pessimiste.annee10.patrimoine}</p>
@@ -716,20 +1045,18 @@ Description: Simulateur de rentabilité pour investissement immobilier
                 valeurBien = valeurBien * (1 + croissancePrix / 100);
                 loyer = loyer * (1 + croissanceLoyer);
                 
-                const cashflowAnnuel = (loyer * 12) - chargesAnnuelles - (chargesAnnuelles * 0.1); // travaux occasionnels
+                const cashflowAnnuel = (loyer * 12) - chargesAnnuelles - (chargesAnnuelles * 0.08);
                 cashflowCumule += Math.max(cashflowAnnuel, 0);
 
                 if (i === 5) {
                     projection.annee5 = {
-                        patrimoine: Math.round(valeurBien).toLocaleString() + '€',
-                        loyer: Math.round(loyer) + '€/mois'
+                        patrimoine: Math.round(valeurBien).toLocaleString() + '€'
                     };
                 }
                 
                 if (i === 10) {
                     projection.annee10 = {
-                        patrimoine: Math.round(valeurBien).toLocaleString() + '€',
-                        loyer: Math.round(loyer) + '€/mois'
+                        patrimoine: Math.round(valeurBien).toLocaleString() + '€'
                     };
                 }
             }
@@ -738,216 +1065,27 @@ Description: Simulateur de rentabilité pour investissement immobilier
             return projection;
         }
 
-        function analyseIA(prix, surface, loyerMensuel, ville) {
-            const analyses = [];
-            const prixM2 = prix / surface;
-            const loyerM2 = loyerMensuel / surface;
-            
-            // Analyse du prix au m²
-            if (ville && villesData[ville]) {
-                const donneesVille = villesData[ville];
-                const ecartPrix = ((prixM2 - donneesVille.prixM2Moyen) / donneesVille.prixM2Moyen) * 100;
-                
-                if (ecartPrix < -10) {
-                    analyses.push({
-                        type: 'success',
-                        icon: '🎯',
-                        titre: 'Prix très attractif',
-                        contenu: `Prix ${Math.abs(ecartPrix).toFixed(1)}% sous le marché (${donneesVille.prixM2Moyen}€/m²). Excellente opportunité d'achat !`
-                    });
-                } else if (ecartPrix > 15) {
-                    analyses.push({
-                        type: 'warning',
-                        icon: '⚠️',
-                        titre: 'Prix surévalué',
-                        contenu: `Prix ${ecartPrix.toFixed(1)}% au-dessus du marché. Négociation recommandée pour atteindre ${donneesVille.prixM2Moyen}€/m².`
-                    });
-                }
+        function creerGraphiques(prixTotal, loyerMensuel, chargesAnnuelles, ville) {
+            // Graphique 1: Évolution patrimoniale
+            const ctx1 = document.getElementById('projectionChart').getContext('2d');
+            if (projectionChart) projectionChart.destroy();
 
-                // Analyse du loyer
-                const ecartLoyer = ((loyerM2 - donneesVille.loyerM2Moyen) / donneesVille.loyerM2Moyen) * 100;
-                if (ecartLoyer > 10) {
-                    analyses.push({
-                        type: 'warning',
-                        icon: '📈',
-                        titre: 'Loyer optimiste',
-                        contenu: `Loyer ${ecartLoyer.toFixed(1)}% au-dessus du marché. Vérifiez la faisabilité (${donneesVille.loyerM2Moyen}€/m² en moyenne).`
-                    });
-                } else if (ecartLoyer < -5) {
-                    analyses.push({
-                        type: 'info',
-                        icon: '💡',
-                        titre: 'Potentiel de revalorisation',
-                        contenu: `Loyer sous le marché. Possibilité d'augmentation jusqu'à ${donneesVille.loyerM2Moyen}€/m².`
-                    });
-                }
-
-                // Analyse de la ville
-                if (donneesVille.attractivite >= 8) {
-                    analyses.push({
-                        type: 'success',
-                        icon: '🌟',
-                        titre: 'Ville très attractive',
-                        contenu: `${donneesVille.nom} présente une forte attractivité (${donneesVille.attractivite}/10). Demande locative soutenue.`
-                    });
-                }
-
-                // Prédictions IA
-                const tendance = donneesVille.croissancePrix;
-                if (tendance >= 2.5) {
-                    analyses.push({
-                        type: 'success',
-                        icon: '🚀',
-                        titre: 'Marché dynamique',
-                        contenu: `Croissance prévue de +${tendance}%/an. Potentiel de plus-value intéressant à moyen terme.`
-                    });
-                }
-            }
-
-            // Analyse de la surface
-            if (surface < 25) {
-                analyses.push({
-                    type: 'info',
-                    icon: '🏠',
-                    titre: 'Petit logement',
-                    contenu: 'Surface adaptée aux étudiants/jeunes actifs. Liquidité potentielle mais rotation locative plus élevée.'
-                });
-            } else if (surface > 90) {
-                analyses.push({
-                    type: 'warning',
-                    icon: '🏡',
-                    titre: 'Grand logement',
-                    contenu: 'Surface importante = marché plus restreint. Vérifiez la demande locale pour les familles.'
-                });
-            }
-
-            // Calcul rentabilité et analyse
-            const loyerAnnuel = loyerMensuel * 12;
-            const rentabilite = (loyerAnnuel / prix) * 100;
-            
-            if (rentabilite >= 8) {
-                analyses.push({
-                    type: 'success',
-                    icon: '💰',
-                    titre: 'Rentabilité exceptionnelle',
-                    contenu: `${rentabilite.toFixed(1)}% de rentabilité brute ! Vérifiez l'état du bien et les travaux nécessaires.`
-                });
-            } else if (rentabilite < 4) {
-                analyses.push({
-                    type: 'error',
-                    icon: '📉',
-                    titre: 'Rentabilité faible',
-                    contenu: `Seulement ${rentabilite.toFixed(1)}% de rentabilité. Envisagez une renégociation du prix ou du loyer.`
-                });
-            }
-
-            // Conseils IA personnalisés
-            analyses.push({
-                type: 'info',
-                icon: '🤖',
-                titre: 'Recommandation IA',
-                contenu: genererConseilIA(prix, surface, loyerMensuel, ville)
+            const annees = Array.from({length: 25}, (_, i) => i + 1);
+            const croissance = ville && villesData[ville] ? villesData[ville].croissancePrix : 2;
+            const valeursPatrimoine = annees.map(annee => {
+                return prixTotal * Math.pow(1 + croissance/100, annee);
             });
 
-            // Affichage des analyses
-            const container = document.getElementById('analysesIA');
-            container.innerHTML = analyses.map(analyse => `
-                <div class="recommendation-item ${analyse.type}">
-                    <h4>${analyse.icon} ${analyse.titre}</h4>
-                    <p>${analyse.contenu}</p>
-                </div>
-            `).join('');
-        }
-
-        function genererConseilIA(prix, surface, loyerMensuel, ville) {
-            const prixM2 = prix / surface;
-            const rentabilite = (loyerMensuel * 12 / prix) * 100;
-            
-            let conseil = "";
-            
-            if (rentabilite > 6 && prixM2 < 1600) {
-                conseil = "Profil investissement parfait ! Prix abordable et rentabilité solide. Vérifiez l'état du bien et foncez.";
-            } else if (rentabilite < 4) {
-                conseil = "Rentabilité insuffisante. Négociez -10% sur le prix ou trouvez un locataire à loyer plus élevé.";
-            } else if (prixM2 > 2000) {
-                conseil = "Prix élevé pour la Normandie. Attendez-vous à une appréciation plus lente mais un locataire plus stable.";
-            } else {
-                conseil = "Projet équilibré. Prévoyez 5-8% du prix d'achat en travaux de remise en état.";
-            }
-
-            if (ville && villesData[ville]) {
-                const villeData = villesData[ville];
-                if (villeData.tension === "forte") {
-                    conseil += " Marché tendu = loyers stables et peu de vacance.";
-                } else if (villeData.tension === "faible") {
-                    conseil += " Marché détendu = soyez compétitif sur le loyer et l'état du bien.";
-                }
-            }
-
-            return conseil;
-        }
-
-        function creerGraphiques(prix, loyerMensuel, chargesAnnuelles, ville) {
-            // Graphique des projections
-            creerGraphiqueProjections(prix, loyerMensuel, chargesAnnuelles, ville);
-            
-            // Graphique de rentabilité
-            creerGraphiqueRentabilite(prix, loyerMensuel, chargesAnnuelles);
-            
-            // Graphique de cash-flow
-            creerGraphiqueCashFlow(loyerMensuel, chargesAnnuelles);
-        }
-
-        function creerGraphiqueProjections(prix, loyerMensuel, chargesAnnuelles, ville) {
-            const ctx = document.getElementById('projectionChart').getContext('2d');
-            
-            if (projectionChart) {
-                projectionChart.destroy();
-            }
-
-            const villeData = ville ? villesData[ville] : null;
-            const croissanceBase = villeData ? villeData.croissancePrix : 2;
-
-            // Données pour les 3 scénarios
-            const labels = [];
-            const dataOptimiste = [];
-            const dataRealiste = [];
-            const dataPessimiste = [];
-
-            for (let annee = 0; annee <= 10; annee++) {
-                labels.push('Année ' + annee);
-                
-                // Calcul valeur du bien selon scénarios
-                const valeurOptimiste = prix * Math.pow(1 + (croissanceBase + 1) / 100, annee);
-                const valeurRealiste = prix * Math.pow(1 + croissanceBase / 100, annee);
-                const valeurPessimiste = prix * Math.pow(1 + Math.max(0, croissanceBase - 1) / 100, annee);
-                
-                dataOptimiste.push(Math.round(valeurOptimiste));
-                dataRealiste.push(Math.round(valeurRealiste));
-                dataPessimiste.push(Math.round(valeurPessimiste));
-            }
-
-            projectionChart = new Chart(ctx, {
+            projectionChart = new Chart(ctx1, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: annees.map(a => `Année ${a}`),
                     datasets: [{
-                        label: 'Optimiste',
-                        data: dataOptimiste,
-                        borderColor: '#28a745',
-                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                        tension: 0.4
-                    }, {
-                        label: 'Réaliste',
-                        data: dataRealiste,
-                        borderColor: '#ffc107',
-                        backgroundColor: 'rgba(255, 193, 7, 0.1)',
-                        tension: 0.4
-                    }, {
-                        label: 'Pessimiste',
-                        data: dataPessimiste,
-                        borderColor: '#dc3545',
-                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        label: 'Valeur du bien',
+                        data: valeursPatrimoine,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
                         tension: 0.4
                     }]
                 },
@@ -955,112 +1093,77 @@ Description: Simulateur de rentabilité pour investissement immobilier
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        title: {
-                            display: true,
-                            text: 'Évolution de la valeur du bien (€)'
+                        legend: {
+                            display: false
                         }
                     },
                     scales: {
                         y: {
-                            beginAtZero: false,
+                            beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    return value.toLocaleString() + '€';
+                                    return Math.round(value).toLocaleString() + '€';
                                 }
                             }
                         }
                     }
                 }
             });
-        }
 
-        function creerGraphiqueRentabilite(prix, loyerMensuel, chargesAnnuelles) {
-            const ctx = document.getElementById('rentabiliteChart').getContext('2d');
-            
-            if (rentabiliteChart) {
-                rentabiliteChart.destroy();
-            }
+            // Graphique 2: Répartition rentabilité
+            const ctx2 = document.getElementById('rentabiliteChart').getContext('2d');
+            if (rentabiliteChart) rentabiliteChart.destroy();
 
             const loyerAnnuel = loyerMensuel * 12;
-            const rentabiliteBrute = (loyerAnnuel / prix) * 100;
-            const rentabiliteNette = ((loyerAnnuel - chargesAnnuelles) / prix) * 100;
+            const chargesReelles = chargesAnnuelles + (loyerAnnuel * 0.05); // + 5% pour imprévus
 
-            rentabiliteChart = new Chart(ctx, {
+            rentabiliteChart = new Chart(ctx2, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Rentabilité Nette', 'Charges', 'Reste'],
+                    labels: ['Charges', 'Revenus nets'],
                     datasets: [{
-                        data: [
-                            rentabiliteNette,
-                            (chargesAnnuelles / prix) * 100,
-                            Math.max(0, 12 - rentabiliteBrute)
-                        ],
-                        backgroundColor: [
-                            '#28a745',
-                            '#dc3545', 
-                            '#e9ecef'
-                        ]
+                        data: [chargesReelles, loyerAnnuel - chargesReelles],
+                        backgroundColor: ['#dc3545', '#28a745'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        title: {
-                            display: true,
-                            text: 'Répartition Rentabilité (%)'
+                        legend: {
+                            position: 'bottom'
                         }
                     }
                 }
             });
-        }
 
-        function creerGraphiqueCashFlow(loyerMensuel, chargesAnnuelles) {
-            const ctx = document.getElementById('cashflowChart').getContext('2d');
-            
-            if (cashflowChart) {
-                cashflowChart.destroy();
-            }
+            // Graphique 3: Cash-flow mensuel
+            const ctx3 = document.getElementById('cashflowChart').getContext('2d');
+            if (cashflowChart) cashflowChart.destroy();
 
-            const chargesMensuelles = chargesAnnuelles / 12;
-            const apport = parseFloat(document.getElementById('apport').value) || 0;
-            const prix = parseFloat(document.getElementById('prix').value) || 0;
-            const tauxEmprunt = parseFloat(document.getElementById('tauxEmprunt').value) || 0;
-            const dureeEmprunt = parseFloat(document.getElementById('dureeEmprunt').value) || 0;
-            
-            // Calcul mensualité
-            const montantEmprunte = prix - apport;
-            const tauxMensuel = tauxEmprunt / 100 / 12;
-            const nbMensualites = dureeEmprunt * 12;
-            const mensualite = montantEmprunte > 0 && tauxMensuel > 0 ? 
-                montantEmprunte * (tauxMensuel * Math.pow(1 + tauxMensuel, nbMensualites)) / 
-                (Math.pow(1 + tauxMensuel, nbMensualites) - 1) : 0;
+            const mois = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+            const cashflowMensuel = loyerMensuel - (chargesAnnuelles / 12);
+            const cashflowData = mois.map(() => cashflowMensuel + (Math.random() - 0.5) * 100); // Variation réaliste
 
-            cashflowChart = new Chart(ctx, {
+            cashflowChart = new Chart(ctx3, {
                 type: 'bar',
                 data: {
-                    labels: ['Entrées', 'Sorties', 'Cash-Flow Net'],
+                    labels: mois,
                     datasets: [{
-                        label: 'Euros',
-                        data: [
-                            loyerMensuel,
-                            chargesMensuelles + mensualite,
-                            loyerMensuel - chargesMensuelles - mensualite
-                        ],
-                        backgroundColor: [
-                            '#28a745',
-                            '#dc3545',
-                            loyerMensuel - chargesMensuelles - mensualite > 0 ? '#28a745' : '#dc3545'
-                        ]
+                        label: 'Cash-flow',
+                        data: cashflowData,
+                        backgroundColor: cashflowData.map(val => val > 0 ? '#28a745' : '#dc3545'),
+                        borderRadius: 5
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        title: {
-                            display: true,
-                            text: 'Cash-Flow Mensuel (€)'
+                        legend: {
+                            display: false
                         }
                     },
                     scales: {
@@ -1075,110 +1178,175 @@ Description: Simulateur de rentabilité pour investissement immobilier
                     }
                 }
             });
+
+            // Graphique 4: Projection long terme
+            const ctx4 = document.getElementById('longTermChart').getContext('2d');
+            if (longTermChart) longTermChart.destroy();
+
+            const anneesLongTerm = [5, 10, 15, 20, 25];
+            const patrimoinesLongTerm = anneesLongTerm.map(annee => {
+                return prixTotal * Math.pow(1 + croissance/100, annee);
+            });
+
+            longTermChart = new Chart(ctx4, {
+                type: 'bar',
+                data: {
+                    labels: anneesLongTerm.map(a => `${a} ans`),
+                    datasets: [{
+                        label: 'Patrimoine',
+                        data: patrimoinesLongTerm,
+                        backgroundColor: 'linear-gradient(45deg, #667eea, #764ba2)',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return Math.round(value).toLocaleString() + '€';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
 
-        function exporterExcel() {
+        function exporterPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Configuration
+            doc.setFontSize(20);
+            doc.setTextColor(102, 126, 234);
+            doc.text('Analyse Immobilière Complète', 20, 30);
+
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+
+            // Récupération des données
             const ville = document.getElementById('ville').value;
             const prix = parseFloat(document.getElementById('prix').value) || 0;
+            const fraisAgence = parseFloat(document.getElementById('fraisAgence').value) || 0;
+            const travaux = parseFloat(document.getElementById('travaux').value) || 0;
+            const mobilier = parseFloat(document.getElementById('mobilier').value) || 0;
             const surface = parseFloat(document.getElementById('surface').value) || 0;
-            const apport = parseFloat(document.getElementById('apport').value) || 0;
             const loyerMensuel = parseFloat(document.getElementById('loyerMensuel').value) || 0;
             const chargesAnnuelles = parseFloat(document.getElementById('chargesAnnuelles').value) || 0;
 
-            if (!prix || !loyerMensuel) {
-                alert('Veuillez remplir au minimum le prix et le loyer pour exporter.');
-                return;
-            }
+            const prixTotal = prix + fraisAgence + travaux + mobilier;
+            const rentabiliteBrute = (loyerMensuel * 12 / prixTotal * 100).toFixed(1);
+            const rentabiliteNette = ((loyerMensuel * 12 - chargesAnnuelles) / prixTotal * 100).toFixed(1);
 
-            // Préparation des données pour Excel
-            const donnees = [];
+            let yPosition = 50;
+
+            // Informations du bien
+            doc.text('=== INFORMATIONS DU BIEN ===', 20, yPosition);
+            yPosition += 10;
+            doc.text(`Ville: ${villesData[ville]?.nom || 'Non spécifiée'}`, 20, yPosition);
+            yPosition += 7;
+            doc.text(`Surface: ${surface} m²`, 20, yPosition);
+            yPosition += 7;
+            doc.text(`Prix d'achat: ${prix.toLocaleString()}€`, 20, yPosition);
+            yPosition += 7;
+            doc.text(`Frais d'agence: ${fraisAgence.toLocaleString()}€`, 20, yPosition);
+            yPosition += 7;
+            doc.text(`Travaux: ${travaux.toLocaleString()}€`, 20, yPosition);
+            yPosition += 7;
+            doc.text(`Mobilier: ${mobilier.toLocaleString()}€`, 20, yPosition);
+            yPosition += 7;
+            doc.setFont(undefined, 'bold');
+            doc.text(`INVESTISSEMENT TOTAL: ${prixTotal.toLocaleString()}€`, 20, yPosition);
+            doc.setFont(undefined, 'normal');
+            yPosition += 15;
+
+            // Rentabilité
+            doc.text('=== RENTABILITÉ ===', 20, yPosition);
+            yPosition += 10;
+            doc.text(`Loyer mensuel: ${loyerMensuel.toLocaleString()}€`, 20, yPosition);
+            yPosition += 7;
+            doc.text(`Charges annuelles: ${chargesAnnuelles.toLocaleString()}€`, 20, yPosition);
+            yPosition += 7;
+            doc.text(`Rentabilité brute: ${rentabiliteBrute}%`, 20, yPosition);
+            yPosition += 7;
+            doc.text(`Rentabilité nette: ${rentabiliteNette}%`, 20, yPosition);
+            yPosition += 15;
+
+            // Projections
+            doc.text('=== PROJECTIONS PATRIMONIALES ===', 20, yPosition);
+            yPosition += 10;
+            const croissance = ville && villesData[ville] ? villesData[ville].croissancePrix : 2;
+            [5, 10, 15, 20, 25].forEach(annee => {
+                const valeur = prixTotal * Math.pow(1 + croissance/100, annee);
+                doc.text(`Année ${annee}: ${Math.round(valeur).toLocaleString()}€`, 20, yPosition);
+                yPosition += 7;
+            });
+
+            yPosition += 10;
+
+            // Conseils
+            doc.text('=== RECOMMANDATIONS ===', 20, yPosition);
+            yPosition += 10;
             
-            // En-têtes et données de base
-            donnees.push(['SIMULATEUR IMMOBILIER PRO - NORMANDIE', '', '', '']);
-            donnees.push(['Date d\'analyse', new Date().toLocaleDateString('fr-FR'), '', '']);
-            donnees.push(['', '', '', '']);
+            const score = rentabiliteBrute >= 8 ? 85 : rentabiliteBrute >= 6 ? 65 : 40;
+            doc.text(`Score d'investissement: ${score}/100`, 20, yPosition);
+            yPosition += 7;
             
-            // Paramètres du bien
-            donnees.push(['PARAMÈTRES DU BIEN', '', '', '']);
-            donnees.push(['Ville', ville ? villesData[ville]?.nom || ville : 'Non définie', '', '']);
-            donnees.push(['Prix d\'achat', prix.toLocaleString() + ' €', '', '']);
-            donnees.push(['Surface', surface + ' m²', '', '']);
-            donnees.push(['Apport personnel', apport.toLocaleString() + ' €', '', '']);
-            donnees.push(['Loyer mensuel', loyerMensuel.toLocaleString() + ' €', '', '']);
-            donnees.push(['Charges annuelles', chargesAnnuelles.toLocaleString() + ' €', '', '']);
-            donnees.push(['', '', '', '']);
-
-            // Résultats
-            const loyerAnnuel = loyerMensuel * 12;
-            const rentabiliteBrute = ((loyerAnnuel / prix) * 100);
-            const rentabiliteNette = (((loyerAnnuel - chargesAnnuelles) / prix) * 100);
-            const prixM2 = surface > 0 ? prix / surface : 0;
-            const loyerM2 = surface > 0 ? loyerMensuel / surface : 0;
-
-            donnees.push(['RÉSULTATS DE L\'ANALYSE', '', '', '']);
-            donnees.push(['Rentabilité brute', rentabiliteBrute.toFixed(2) + ' %', '', '']);
-            donnees.push(['Rentabilité nette', rentabiliteNette.toFixed(2) + ' %', '', '']);
-            donnees.push(['Prix au m²', prixM2.toFixed(0) + ' €', '', '']);
-            donnees.push(['Loyer au m²', loyerM2.toFixed(1) + ' €', '', '']);
-            donnees.push(['', '', '', '']);
-
-            // Projections (simplifié)
-            if (ville && villesData[ville]) {
-                const croissance = villesData[ville].croissancePrix;
-                const valeur5ans = prix * Math.pow(1 + croissance/100, 5);
-                const valeur10ans = prix * Math.pow(1 + croissance/100, 10);
-                
-                donnees.push(['PROJECTIONS', '', '', '']);
-                donnees.push(['Valeur estimée dans 5 ans', Math.round(valeur5ans).toLocaleString() + ' €', '', '']);
-                donnees.push(['Valeur estimée dans 10 ans', Math.round(valeur10ans).toLocaleString() + ' €', '', '']);
-                donnees.push(['Croissance annuelle prévue', croissance + ' %', '', '']);
-            }
-
-            // Création du workbook Excel
-            const ws = XLSX.utils.aoa_to_sheet(donnees);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Analyse Immobilière");
-
-            // Style des colonnes
-            ws['!cols'] = [
-                {wch: 25}, // Colonne A
-                {wch: 20}, // Colonne B  
-                {wch: 15}, // Colonne C
-                {wch: 15}  // Colonne D
-            ];
-
-            // Export du fichier
-            const nomVille = ville ? villesData[ville]?.nom.replace(/\s+/g, '_') : 'analyse';
-            const nomFichier = `simulateur_immobilier_${nomVille}_${new Date().getTime()}.xlsx`;
+            const recommandation = score >= 70 ? 
+                'Investissement recommandé - Bonne rentabilité' :
+                score >= 50 ? 
+                'Investissement correct - Analyser les risques' :
+                'Investissement risqué - Revoir les paramètres';
             
-            XLSX.writeFile(wb, nomFichier);
+            doc.text(`Recommandation: ${recommandation}`, 20, yPosition);
+            yPosition += 10;
+
+            // Footer
+            doc.setFontSize(10);
+            doc.setTextColor(128, 128, 128);
+            doc.text('Rapport généré le ' + new Date().toLocaleDateString('fr-FR'), 20, 280);
+            doc.text('Simulateur Immobilier Pro - Normandie', 20, 285);
+
+            // Sauvegarde
+            doc.save('analyse-immobiliere-' + new Date().toISOString().split('T')[0] + '.pdf');
         }
 
-        // Auto-sauvegarde locale
         function sauvegarderLocalement() {
             const donnees = {
                 ville: document.getElementById('ville').value,
                 prix: document.getElementById('prix').value,
+                fraisAgence: document.getElementById('fraisAgence').value,
                 surface: document.getElementById('surface').value,
+                travaux: document.getElementById('travaux').value,
+                mobilier: document.getElementById('mobilier').value,
                 apport: document.getElementById('apport').value,
+                typeLocation: document.getElementById('typeLocation').value,
                 loyerMensuel: document.getElementById('loyerMensuel').value,
                 chargesAnnuelles: document.getElementById('chargesAnnuelles').value,
                 tauxEmprunt: document.getElementById('tauxEmprunt').value,
                 dureeEmprunt: document.getElementById('dureeEmprunt').value
             };
-            
+
             localStorage.setItem('simulateurImmobilier', JSON.stringify(donnees));
         }
 
         function chargerDonneesSauvegardees() {
-            const donneesSauvegardees = localStorage.getItem('simulateurImmobilier');
-            if (donneesSauvegardees) {
-                const donnees = JSON.parse(donneesSauvegardees);
-                
-                Object.keys(donnees).forEach(key => {
+            const donnees = localStorage.getItem('simulateurImmobilier');
+            if (donnees) {
+                const parsed = JSON.parse(donnees);
+                Object.keys(parsed).forEach(key => {
                     const element = document.getElementById(key);
-                    if (element && donnees[key]) {
-                        element.value = donnees[key];
+                    if (element && parsed[key]) {
+                        element.value = parsed[key];
                     }
                 });
             }
@@ -1189,7 +1357,7 @@ Description: Simulateur de rentabilité pour investissement immobilier
             chargerDonneesSauvegardees();
             
             // Auto-sauvegarde sur changement
-            const inputs = ['ville', 'prix', 'surface', 'apport', 'loyerMensuel', 'chargesAnnuelles', 'tauxEmprunt', 'dureeEmprunt'];
+            const inputs = ['ville', 'prix', 'fraisAgence', 'surface', 'travaux', 'mobilier', 'apport', 'typeLocation', 'loyerMensuel', 'chargesAnnuelles', 'tauxEmprunt', 'dureeEmprunt'];
             inputs.forEach(inputId => {
                 const element = document.getElementById(inputId);
                 if (element) {
@@ -1208,6 +1376,7 @@ Description: Simulateur de rentabilité pour investissement immobilier
             if (projectionChart) projectionChart.resize();
             if (rentabiliteChart) rentabiliteChart.resize();
             if (cashflowChart) cashflowChart.resize();
+            if (longTermChart) longTermChart.resize();
         });
     </script>
 </body>
