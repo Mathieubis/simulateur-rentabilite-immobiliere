@@ -100,6 +100,8 @@ Description: Simulateur de rentabilité pour investissement immobilier
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
         }
 
         .header h1 {
@@ -111,9 +113,9 @@ Description: Simulateur de rentabilité pour investissement immobilier
             display: flex;
             gap: 15px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
-        /* CONTROLS */
         .theme-toggle, .save-btn, .export-btn {
             background: rgba(255,255,255,0.2);
             border: 1px solid rgba(255,255,255,0.3);
@@ -216,8 +218,8 @@ Description: Simulateur de rentabilité pour investissement immobilier
             top: 100%;
             left: 0;
             right: 0;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
+            background: white;
+            border: 1px solid #ddd;
             border-radius: 8px;
             max-height: 200px;
             overflow-y: auto;
@@ -228,12 +230,12 @@ Description: Simulateur de rentabilité pour investissement immobilier
         .suggestion-item {
             padding: 10px;
             cursor: pointer;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-primary);
+            border-bottom: 1px solid #eee;
+            color: #333;
         }
 
         .suggestion-item:hover {
-            background: var(--bg-secondary);
+            background: #f8f9fa;
         }
 
         .market-indicators {
@@ -310,7 +312,7 @@ Description: Simulateur de rentabilité pour investissement immobilier
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            background: conic-gradient(#ffffff 0deg, #ffffff var(--score-angle), transparent var(--score-angle));
+            background: conic-gradient(#ffffff 0deg, #ffffff var(--score-angle), rgba(255,255,255,0.3) var(--score-angle));
             margin: 0 auto 20px;
             display: flex;
             align-items: center;
@@ -482,8 +484,8 @@ Description: Simulateur de rentabilité pour investissement immobilier
         }
 
         .spinner {
-            border: 3px solid var(--border-color);
-            border-top: 3px solid #3498db;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid #ffffff;
             border-radius: 50%;
             width: 30px;
             height: 30px;
@@ -508,12 +510,20 @@ Description: Simulateur de rentabilité pour investissement immobilier
                 position: static;
                 height: auto;
             }
+
+            .left-panel {
+                max-height: none;
+            }
         }
 
         @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
             .header-content {
                 flex-direction: column;
-                gap: 20px;
+                text-align: center;
             }
 
             .form-grid {
@@ -522,6 +532,10 @@ Description: Simulateur de rentabilité pour investissement immobilier
 
             .market-indicators {
                 grid-template-columns: repeat(2, 1fr);
+            }
+
+            .export-buttons {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -547,8 +561,8 @@ Description: Simulateur de rentabilité pour investissement immobilier
                     <button class="save-btn" onclick="sauvegarderManuellement()">
                         <i class="fas fa-save"></i> Sauvegarder
                     </button>
-                    <button class="export-btn" onclick="showExportModal()">
-                        <i class="fas fa-download"></i> Exporter
+                    <button class="export-btn" onclick="exporterPDF()">
+                        <i class="fas fa-download"></i> Export PDF
                     </button>
                 </div>
             </div>
@@ -572,21 +586,21 @@ Description: Simulateur de rentabilité pour investissement immobilier
                         <p>Analyse des données de marché en cours...</p>
                     </div>
 
-                    <div id="marketIndicators" class="market-indicators" style="display: none;">
+                    <div id="marketIndicators" class="market-indicators">
                         <div class="indicator">
-                            <div class="indicator-value" id="prixM2Moyen">-</div>
+                            <div class="indicator-value" id="prixM2Moyen">4500€</div>
                             <div class="indicator-label">Prix/m² moyen</div>
                         </div>
                         <div class="indicator">
-                            <div class="indicator-value" id="evolutionAnnuelle">-</div>
+                            <div class="indicator-value" id="evolutionAnnuelle">+2.1%</div>
                             <div class="indicator-label">Évolution/an</div>
                         </div>
                         <div class="indicator">
-                            <div class="indicator-value" id="tensionLocative">-</div>
+                            <div class="indicator-value" id="tensionLocative">Forte</div>
                             <div class="indicator-label">Tension locative</div>
                         </div>
                         <div class="indicator">
-                            <div class="indicator-value" id="rendementZone">-</div>
+                            <div class="indicator-value" id="rendementZone">4.2%</div>
                             <div class="indicator-label">Rendement zone</div>
                         </div>
                     </div>
@@ -698,7 +712,7 @@ Description: Simulateur de rentabilité pour investissement immobilier
                 
                 <!-- SCORE IA -->
                 <div class="score-container">
-                    <div class="score-circle" id="scoreCircle">
+                    <div class="score-circle" id="scoreCircle" style="--score-angle: 306deg;">
                         <div class="score-value" id="scoreValue">85</div>
                     </div>
                     <div class="score-label" id="scoreLabel">Score d'investissement</div>
@@ -736,7 +750,7 @@ Description: Simulateur de rentabilité pour investissement immobilier
 
                 <div class="result-card">
                     <div class="result-header">
-                        <span class="result-label">⏰ Temps de retour sur investissement</span>
+                        <span class="result-label">⏰ Temps de retour</span>
                         <span class="result-value neutral" id="tempsRetour">7.8 ans</span>
                     </div>
                 </div>
@@ -744,94 +758,4 @@ Description: Simulateur de rentabilité pour investissement immobilier
                 <!-- RECOMMANDATIONS IA -->
                 <div class="recommendations">
                     <h3><i class="fas fa-robot"></i> Recommandations IA</h3>
-                    <div id="recommendationsList">
-                        <!-- Généré dynamiquement -->
-                    </div>
-                </div>
-
-                <!-- EXPORT -->
-                <div class="export-section">
-                    <h3><i class="fas fa-download"></i> Export & Partage</h3>
-                    <div class="export-buttons">
-                        <button class="btn-export btn-pdf" onclick="exporterPDF()">
-                            <i class="fas fa-file-pdf"></i> Rapport PDF
-                        </button>
-                        <button class="btn-export btn-excel" onclick="exporterExcel()">
-                            <i class="fas fa-file-excel"></i> Données Excel
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // ===========================================
-        // VARIABLES GLOBALES
-        // ===========================================
-        
-        let donneesMarche = null;
-        let profilInvestisseur = {
-            experience: 'intermediaire',
-            objectif: 'revenus',
-            toleranceRisque: 'modere'
-        };
-        
-        let autoSaveTimer;
-        
-        // ===========================================
-        // GEOLOCALISATION ET DONNEES DE MARCHE
-        // ===========================================
-        
-        async function rechercherAdresses() {
-            const adresse = document.getElementById('adresse').value;
-            if (adresse.length < 3) {
-                document.getElementById('addressSuggestions').style.display = 'none';
-                return;
-            }
-            
-            // Simulation d'API géographique
-            const suggestions = await simulerAPIAdresses(adresse);
-            afficherSuggestionsAdresses(suggestions);
-        }
-        
-        async function simulerAPIAdresses(query) {
-            // Simulation d'appel API - remplacer par vraie API
-            const suggestions = [
-                { adresse: `${query}, Paris 11e (75011)`, lat: 48.8566, lng: 2.3522, codePostal: '75011' },
-                { adresse: `${query}, Lyon 3e (69003)`, lat: 45.7578, lng: 4.8320, codePostal: '69003' },
-                { adresse: `${query}, Marseille 1er (13001)`, lat: 43.2965, lng: 5.3698, codePostal: '13001' }
-            ];
-            
-            return suggestions.filter(s => 
-                s.adresse.toLowerCase().includes(query.toLowerCase())
-            ).slice(0, 5);
-        }
-        
-        function afficherSuggestionsAdresses(suggestions) {
-            const container = document.getElementById('addressSuggestions');
-            
-            if (suggestions.length === 0) {
-                container.style.display = 'none';
-                return;
-            }
-            
-            container.innerHTML = suggestions.map(suggestion => 
-                `<div class="suggestion-item" onclick="selectionnerAdresse('${suggestion.adresse}', '${suggestion.codePostal}')">${suggestion.adresse}</div>`
-            ).join('');
-            
-            container.style.display = 'block';
-        }
-        
-        async function selectionnerAdresse(adresse, codePostal) {
-            document.getElementById('adresse').value = adresse;
-            document.getElementById('addressSuggestions').style.display = 'none';
-            
-            // Charger les données de marché
-            await chargerDonneesMarche(codePostal);
-            suggererParametresAutomatiques();
-            calculer();
-            sauvegarderAutomatique();
-        }
-        
-        async function chargerDonne
+                    <div id="
